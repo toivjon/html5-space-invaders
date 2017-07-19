@@ -36,12 +36,17 @@
       assert.deepEqual(initState, true, "Init-state should change to true.");
     });
     QUnit.test("Missing canvas check.", function (assert) {
+      // change the identifier of the target canvas temporarily.
       var canvas = document.getElementById("game-canvas");
       canvas.setAttribute("id", "foo-canvas");
+
+      // check that things actually fail.
       var spaceInvaders = new SpaceInvaders();
       assert.deepEqual(spaceInvaders.init(), false, "Initialization fails.");
       var initState = spaceInvaders.isInitialized();
       assert.deepEqual(initState, false, "Init-state should remain false.");
+
+      // restore the original identifier back for the canvas.
       canvas.setAttribute("id", "game-canvas");
     });
     QUnit.test("Missing 2D drawing context check.", function (assert) {
