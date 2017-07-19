@@ -1,5 +1,8 @@
 var spaceInvaders = (function () {
 
+  /** A definition whether the game is initialized. */
+  var initialized = false;
+
   return {
     /** ***********************************************************************
      * Initialize the game.
@@ -7,9 +10,21 @@ var spaceInvaders = (function () {
      * Initialization will ensure that the game will get a reference to the 2D
      * drawing context from the game canvas element. It also provides a way to
      * define a game wide initializations for game scenes etc.
+     *
+     * @return {boolean} A definition whether the initialization succeeded.
      */
     init: function () {
+      // a sanity check to prevent re-initialization.
+      if (initialized == true) {
+        console.error("Unable to re-initialize the game.")
+        return false;
+      }
+
       // TODO ...
+
+      // when the code reaches this point, the initialization succeeded.
+      initialized = true;
+      return true;
     },
     /** ***********************************************************************
      * Run the game.
@@ -25,6 +40,7 @@ var spaceInvaders = (function () {
      */
     run: function (tickTime) {
       // TODO ...
+      requestAnimationFrame(spaceInvaders.run);
     },
     /** ***********************************************************************
      * Start the game.
@@ -35,11 +51,10 @@ var spaceInvaders = (function () {
      * error is detected by the browser JavaScript engine.
      */
     start: function () {
-      this.init();
-      this.run(0);
+      if (this.init()) {
+        this.run(0);
+      }
     }
   };
 
 })();
-
-spaceInvaders.start();
