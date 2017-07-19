@@ -7,6 +7,8 @@ var SpaceInvaders = (function () {
   var initialized = false;
   /** A reference to the HTML5 canvas used as the rendering target. */
   var canvas = undefined;
+  /** a reference to the 2D drawing context from the HTML5 canvas. */
+  var ctx = undefined;
 
   return {
     /** ***********************************************************************
@@ -42,7 +44,11 @@ var SpaceInvaders = (function () {
         return false;
       }
 
-      // TODO ...
+      // get a reference to the 2D drawing context.
+      if (!(ctx = canvas.getContext("2d"))) {
+        console.error("Unable to get a reference to 2D draw context.");
+        return false;
+      }
 
       // when the code reaches this point, the initialization succeeded.
       initialized = true;

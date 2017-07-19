@@ -44,6 +44,21 @@
       assert.deepEqual(initState, false, "Init-state should remain false.");
       canvas.setAttribute("id", "game-canvas");
     });
+    QUnit.test("Missing 2D drawing context check.", function (assert) {
+      // disable the context retrieval functionality temporarily.
+      var canvas = document.getElementById("game-canvas");
+      var originalGetContext = canvas.getContext;
+      canvas.getContext = function (value) { return null; }
+
+      // check that things actually fail.
+      var spaceInvaders = new SpaceInvaders();
+      assert.deepEqual(spaceInvaders.init(), false, "Initialization fails.");
+      var initState = spaceInvaders.isInitialized();
+      assert.deepEqual(initState, false, "Init-state should remain false.");
+
+      // restore (re-enable) the context retrieval functionality.
+      canvas.getContext = originalGetContext;
+    });
     // ========================================================================
   </script>
 </body>
