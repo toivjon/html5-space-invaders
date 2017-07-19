@@ -1,9 +1,20 @@
-var spaceInvaders = (function () {
+var SpaceInvaders = (function () {
 
   /** A definition whether the game is initialized. */
   var initialized = false;
 
   return {
+    /** ***********************************************************************
+     * Get the definition whether the game is initialized.
+     *
+     * This function provides a simple way to externally check whether the game
+     * has been inited successfully and is ready to run (or already running).
+     *
+     * @return {boolean} A definition whether the game is inited.
+     */
+    isInitialized: function () {
+      return initialized;
+    },
     /** ***********************************************************************
      * Initialize the game.
      *
@@ -57,4 +68,4 @@ var spaceInvaders = (function () {
     }
   };
 
-})();
+});
