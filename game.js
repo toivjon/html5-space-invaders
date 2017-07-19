@@ -1,7 +1,12 @@
 var SpaceInvaders = (function () {
 
+  /** A constant id of the canvas to be used as the rendering target. */
+  var CANVAS_ID = "game-canvas";
+
   /** A definition whether the game is initialized. */
   var initialized = false;
+  /** A reference to the HTML5 canvas used as the rendering target. */
+  var canvas = undefined;
 
   return {
     /** ***********************************************************************
@@ -28,6 +33,12 @@ var SpaceInvaders = (function () {
       // a sanity check to prevent re-initialization.
       if (initialized == true) {
         console.error("Unable to re-initialize the game.")
+        return false;
+      }
+
+      // get a reference to the target <canvas> element.
+      if (!(canvas = document.getElementById(CANVAS_ID))) {
+        console.error("Unable to find the required canvas element.");
         return false;
       }
 
