@@ -29,6 +29,8 @@
       var spaceInvaders = new SpaceInvaders();
       assert.deepEqual(spaceInvaders.init(), true, "Initialization check.");
       assert.deepEqual(spaceInvaders.init(), false, "Initialization check.");
+      var initState = spaceInvaders.isInitialized();
+      assert.deepEqual(initState, true, "Init-state should change to true.");
     });
     // ========================================================================
   </script>
