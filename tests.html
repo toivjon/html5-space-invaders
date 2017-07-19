@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>HTML5 Space Invaders Tests</title>
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.4.0.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="https://code.jquery.com/qunit/qunit-2.4.0.js"></script>
+  <script src="game.js"></script>
+  <script>
+    // ========================================================================
+    // a set of initialization specific unit tests.
+    QUnit.module("Initialization tests");
+    QUnit.test("Initial state check.", function (assert) {
+      var spaceInvaders = new SpaceInvaders();
+      var initState = spaceInvaders.isInitialized();
+      assert.deepEqual(initState, false, "Init-state should be first false.");
+    });
+    QUnit.test("Initial state check after initialization.", function (assert) {
+      var spaceInvaders = new SpaceInvaders();
+      assert.deepEqual(spaceInvaders.init(), true, "Initialization check.");
+      var initState = spaceInvaders.isInitialized();
+      assert.deepEqual(initState, true, "Init-state should change to true.");
+    });
+    QUnit.test("Re-initialization check.", function (assert) {
+      var spaceInvaders = new SpaceInvaders();
+      assert.deepEqual(spaceInvaders.init(), true, "Initialization check.");
+      assert.deepEqual(spaceInvaders.init(), false, "Initialization check.");
+    });
+    // ========================================================================
+  </script>
+</body>
+</html>
