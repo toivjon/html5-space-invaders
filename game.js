@@ -20,6 +20,8 @@ var SpaceInvaders = SpaceInvaders || {};
 SpaceInvaders.Game = function () {
   /** A constant id of the canvas to be used as the rendering target. */
   var CANVAS_ID = "game-canvas";
+  /** A constant definition for the game framerate. */
+  var FPS = (1000.0 / 60.0);
 
   /** A definition whether the game is initialized or not. */
   var initialized = false;
@@ -29,6 +31,10 @@ SpaceInvaders.Game = function () {
   var ctx = undefined;
   /** A reference to the currently active scene. */
   var scene = undefined;
+  /** A definition of the time when the game was previously updated. */
+  var previousTickTime = 0;
+  /** A delta accumulator that collects the exceeding update time delta. */
+  var deltaAccumulator = 0;
 
   /** ***********************************************************************
     * Get the definition whether the game is initialized.
@@ -104,7 +110,24 @@ SpaceInvaders.Game = function () {
    * @param {double} tickTime A timestamp when the function is called.
    */
   this.run = function (tickTime) {
-    // TODO ...
+    // calculate a delta time and store the current tick time.
+    var dt = (tickTime - previousTickTime);
+    previousTickTime = tickTime;
+
+    // update and draw the scene only when we have reasonable delta.
+    if (dt < 100) {
+      deltaAccumulator += dt;
+      while (deltaAccumulator >= FPS) {
+        scene.update(FPS);
+        deltaAccumulator -= FPS;
+      }
+
+      // swipe old contents from the draw buffer and draw the scene.
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      scene.render(ctx);
+    }
+
+    // perform a main loop iteration.
     requestAnimationFrame(this.run.bind(this));
   };
 
@@ -138,4 +161,20 @@ SpaceInvaders.Game = function () {
 SpaceInvaders.Scene = function (game) {
   /** A reference to the root game instance. */
   this.game = game;
+
+  /** *************************************************************************
+   * Update (i.e. tick) the all the game logic within the scene.
+   * @param {double} dt The delta time from the previous tick operation.
+   */
+  this.update = function (dt) {
+
+  };
+
+  /** *************************************************************************
+   * Render (i.e. draw) the all visible stuff.
+   * @param {CanvasRenderingContext2D} ctx The drawing context to use.
+   */
+  this.render = function (ctx) {
+
+  };
 }
