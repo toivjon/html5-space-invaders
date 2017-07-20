@@ -103,8 +103,8 @@
           // check that injected and default values get assigned correctly.
           a.deepEqual(e.game, this.game, "Game instance must be injected.");
           a.isTrue((e.scene instanceof SpaceInvaders.Scene), "Scene must be injected.");
-          a.deepEqual(e.getX(), 0, "Initial X-coordinate must be zero.");
-          a.deepEqual(e.getY(), 0, "Initial Y-coordinate must be zero.");
+          a.deepEqual(e.getX(), e.DEFAULT_X, "Initial X-coordinate must be set to default.");
+          a.deepEqual(e.getY(), e.DEFAULT_Y, "Initial Y-coordinate must be set to default.");
 
           // check that setters works as expected.
           e.setX(313);

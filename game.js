@@ -162,10 +162,15 @@ SpaceInvaders.Entity = function (game) {
   /** A reference to the used scene instance. */
   this.scene = game.getScene();
 
+  /** A constant default value for the y-position. */
+  this.DEFAULT_X = 0;
+  /** A constant default value for the x-position. */
+  this.DEFAULT_Y = 0;
+
   /** The x-coordinate position of the entity. */
-  var x = 0;
+  var x = this.DEFAULT_X;
   /** The y-coordinate position of the entity. */
-  var y = 0;
+  var y = this.DEFAULT_Y;
 
   this.getX = function () { return x; }
   this.getY = function () { return y; }
