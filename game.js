@@ -240,10 +240,15 @@ SpaceInvaders.Scene = function (game) {
   var hiScoreCaption;
   var score2Caption;
 
+  var score1Text;
+  var hiScoreText;
+  var score2Text;
+
   // initialize the static caption for the 1st player score.
   score1Caption = new SpaceInvaders.TextEntity(game);
   score1Caption.setText("SCORE< 1 >");
-  score1Caption.setX(50);
+  score1Caption.setAlign("center");
+  score1Caption.setX(125);
   score1Caption.setY(40);
 
   // initialize the static caption for the high score.
@@ -251,13 +256,35 @@ SpaceInvaders.Scene = function (game) {
   hiScoreCaption.setText("HI-SCORE");
   hiScoreCaption.setAlign("center");
   hiScoreCaption.setX(672 / 2);
-  hiScoreCaption.setY(40);
+  hiScoreCaption.setY(score1Caption.getY());
 
   // initialize the static caption for the 1st player score.
   score2Caption = new SpaceInvaders.TextEntity(game);
   score2Caption.setText("SCORE< 2 >");
-  score2Caption.setX(672 - 225);
-  score2Caption.setY(40);
+  score2Caption.setAlign("center");
+  score2Caption.setX(672 - 130);
+  score2Caption.setY(score1Caption.getY());
+
+  // initialize the dynamic score value for the 1st player score.
+  score1Text = new SpaceInvaders.TextEntity(game);
+  score1Text.setText("0000");
+  score1Text.setAlign("center");
+  score1Text.setX(score1Caption.getX());
+  score1Text.setY(score1Caption.getY() + 35);
+
+  // initialize the dynamic score value for the high score.
+  hiScoreText = new SpaceInvaders.TextEntity(game);
+  hiScoreText.setText("0000");
+  hiScoreText.setAlign("center");
+  hiScoreText.setX(hiScoreCaption.getX());
+  hiScoreText.setY(score1Text.getY());
+
+  // initialize the dynamic score value for the 2nd player score.
+  score2Text = new SpaceInvaders.TextEntity(game);
+  score2Text.setText("0000");
+  score2Text.setAlign("center");
+  score2Text.setX(score2Caption.getX());
+  score2Text.setY(score1Text.getY());
 
   /** *************************************************************************
    * Update (i.e. tick) the all the game logic within the scene.
@@ -275,5 +302,9 @@ SpaceInvaders.Scene = function (game) {
     score1Caption.render(ctx);
     hiScoreCaption.render(ctx);
     score2Caption.render(ctx);
+
+    score1Text.render(ctx);
+    hiScoreText.render(ctx);
+    score2Text.render(ctx);
   };
 }
