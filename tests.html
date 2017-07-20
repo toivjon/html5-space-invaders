@@ -47,6 +47,7 @@
 
       QUnit.test("Check game state without calling init.", function (a) {
         a.isFalse(this.game.isInitialized(), "Init state must be false.");
+        a.isUndefined(this.game.getScene(), "The scene must be undefined.");
       });
 
       QUnit.test("Check the behavior when canvas is missing.", function (a) {
@@ -58,6 +59,7 @@
         a.isFalse(this.game.init(), "Initialization fails.");
         var initState = this.game.isInitialized();
         a.isFalse(initState, "Init-state should remain false.");
+        a.isUndefined(this.game.getScene(), "The scene must be undefined.");
 
         // restore the original identifier back for the canvas.
         canvas.setAttribute("id", "game-canvas");
@@ -73,6 +75,7 @@
         a.isFalse(this.game.init(), "Initialization fails.");
         var initState = this.game.isInitialized();
         a.isFalse(initState, "Init-state should remain false.");
+        a.isUndefined(this.game.getScene(), "The scene must be undefined.");
 
         // restore (re-enable) the context retrieval functionality.
         canvas.getContext = originalGetContext;
@@ -85,11 +88,13 @@
 
         QUnit.test("Check game state after calling init.", function (a) {
           a.isTrue(this.game.isInitialized(), "Init state must be true.");
+          a.isTrue((this.game.getScene() instanceof SpaceInvaders.Scene), "Scene must be assigned.");
         });
 
         QUnit.test("Check that reinitialization attempts fail.", function (a) {
           a.isFalse(this.game.init(), "Re-initialization must return false.");
           a.isTrue(this.game.isInitialized(), "Init state must stay true.");
+          a.isTrue((this.game.getScene() instanceof SpaceInvaders.Scene), "Scene must stay assigned.");
         })
       });
     });

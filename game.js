@@ -43,6 +43,19 @@ SpaceInvaders.Game = function () {
   };
 
   /** ***********************************************************************
+   * Get a reference to the currently active scene.
+   *
+   * This function returns a reference to currently active scene. If there is
+   * currently no active scene, then this function returns the default value
+   * (undefined) as a result.
+   *
+   * @return {SpaceInvaders.Scene} The currently active scene or undefined.
+   */
+  this.getScene = function () {
+    return scene;
+  }
+
+  /** ***********************************************************************
    * Initialize the game.
    *
    * Initialization will ensure that the game will get a reference to the 2D
@@ -69,6 +82,9 @@ SpaceInvaders.Game = function () {
       console.error("Unable to get a reference to 2D draw context.");
       return false;
     }
+
+    // initialize the only scene used within the application.
+    scene = new SpaceInvaders.Scene(this);
 
     // when the code reaches this point, the initialization succeeded.
     initialized = true;
@@ -106,3 +122,20 @@ SpaceInvaders.Game = function () {
     }
   };
 };
+
+/** ***************************************************************************
+ * The scene used within the Space Invaders game application.
+ *
+ * Space Invaders contains only one scene that is kept visible during the whole
+ * application execution. This scene will always contain the 3 score at the top
+ * of the scene (i.e. 1st and 2nd player scores and the high score).The center
+ * contents of the screen will be changed dynamically based on the current state
+ * of the game. The original version also contained the "Credit" section always
+ * visible at the bottom-right corner of the scene, but we can leave that out.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the target game instance.
+ */
+SpaceInvaders.Scene = function (game) {
+  /** A reference to the root game instance. */
+  this.game = game;
+}
