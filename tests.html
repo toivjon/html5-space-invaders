@@ -153,6 +153,42 @@
           e.setVisible(false);
           e.render(ctx);
         });
+
+        QUnit.test("Check that text entity blinking works correctly.", function (a) {
+          var e = new SpaceInvaders.TextEntity(this.game);
+          a.expect((e.BLINK_COUNT * e.BLINK_FREQUENCY) + e.BLINK_FREQUENCY);
+
+          // construct a testing context object to calculate the amount of render calls.
+          var ctx = { fillText: function (x, y, z) { a.step("The fillText is called."); }}
+
+          // check that initially invisible object is not getting blinked (asserts: 0)
+          e.setVisible(false);
+          e.blink();
+          e.update(0);
+          e.render(ctx);
+
+          // check that blinking is performed the correct amount of times if visible.
+          e.setVisible(true);
+          e.blink();
+          for (i = 0; i < e.BLINK_COUNT * e.BLINK_FREQUENCY; i++) {
+            e.update(0);
+            e.render(ctx);
+          }
+
+          // check that recalling the blink during blinks will reset blinking state.
+          e.blink();
+          for (i = 0; i < e.BLINK_FREQUENCY; i++) {
+            e.update(0);
+            e.render(ctx);
+          }
+          e.blink();
+          for (i = 0; i < e.BLINK_COUNT * e.BLINK_FREQUENCY; i++) {
+            e.update(0);
+            e.render(ctx);
+          }
+          e.update(0);
+          e.render(ctx);
+        });
       });
     });
     // ========================================================================

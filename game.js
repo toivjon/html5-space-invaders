@@ -200,6 +200,10 @@ SpaceInvaders.TextEntity = function (game) {
   this.DEFAULT_ALIGN = "start";
   /** A constant default visibility state for the text. */
   this.DEFAULT_VISIBLE = true;
+  /** A constant amount of toggles to perform after #blink is called. */
+  this.BLINK_COUNT = 20;
+  /** A constant amount of updates (i.e. interval) between the blinking. */
+  this.BLINK_FREQUENCY = 5;
 
   /** The text to be rendered. */
   var text = this.DEFAULT_TEXT;
@@ -211,9 +215,26 @@ SpaceInvaders.TextEntity = function (game) {
   var align = this.DEFAULT_ALIGN;
   /** The definition whether the entity should be rendered. */
   var visible = this.DEFAULT_VISIBLE;
+  /** The amount of remaining blinks (visible/invisible toggles). */
+  var blinks = 0;
+  /** The blink timer that will perform the blink frequency calculation. */
+  var blinkTimer = 0;
 
+  /** *************************************************************************
+   * Update (i.e. tick) the the logic within the entity.
+   * @param {double} dt The delta time from the previous tick operation.
+   */
   this.update = function (dt) {
-    // ...
+    if (blinks > 0) {
+      blinkTimer--;
+      if (blinkTimer == 0) {
+        this.setVisible(!this.isVisible());
+        blinks--;
+        if (blinks > 0) {
+          blinkTimer = this.BLINK_FREQUENCY;
+        }
+      }
+    }
   }
 
   /** *************************************************************************
@@ -226,6 +247,21 @@ SpaceInvaders.TextEntity = function (game) {
       ctx.textAlign = this.getAlign();
       ctx.font = this.getFont();
       ctx.fillText(this.getText(), this.getX(), this.getY());
+    }
+  }
+
+  /** *************************************************************************
+   * Start blinking (i.e. toggling visible/invisible).
+   *
+   * After this function is called, the target entity will start to blink if it
+   * is currently visible. If the entity is already blinking then the amount of
+   * remaining blinks will be reset back to the amount of the this.BLINK_COUNT.
+   */
+  this.blink = function () {
+    if (this.isVisible() || blinks > 0) {
+      this.setVisible(true);
+      blinks = this.BLINK_COUNT;
+      blinkTimer = this.BLINK_FREQUENCY;
     }
   }
 
@@ -313,7 +349,13 @@ SpaceInvaders.Scene = function (game) {
    * @param {double} dt The delta time from the previous tick operation.
    */
   this.update = function (dt) {
-    // ...
+    score1Caption.update(dt);
+    hiScoreCaption.update(dt);
+    score2Caption.update(dt);
+
+    score1Text.update(dt);
+    hiScoreText.update(dt);
+    score2Text.update(dt);
   };
 
   /** *************************************************************************
