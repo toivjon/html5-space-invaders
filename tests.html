@@ -96,6 +96,22 @@
           a.isTrue(this.game.isInitialized(), "Init state must stay true.");
           a.isTrue((this.game.getScene() instanceof SpaceInvaders.Scene), "Scene must stay assigned.");
         })
+
+        QUnit.test("Check that base entity works as expected.", function (a) {
+          var e = new SpaceInvaders.Entity(this.game);
+
+          // check that injected and default values get assigned correctly.
+          a.deepEqual(e.game, this.game, "Game instance must be injected.");
+          a.isTrue((e.scene instanceof SpaceInvaders.Scene), "Scene must be injected.");
+          a.deepEqual(e.getX(), 0, "Initial X-coordinate must be zero.");
+          a.deepEqual(e.getY(), 0, "Initial Y-coordinate must be zero.");
+
+          // check that setters works as expected.
+          e.setX(313);
+          e.setY(131);
+          a.deepEqual(e.getX(), 313, "X-coordinate setter must set x-value.");
+          a.deepEqual(e.getY(), 131, "Y-coordinate setter must set y-value.");
+        });
       });
     });
     // ========================================================================
