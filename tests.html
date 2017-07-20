@@ -14,26 +14,52 @@
   <script src="https://code.jquery.com/qunit/qunit-2.4.0.js"></script>
   <script src="game.js"></script>
   <script>
+    QUnit.assert.isUndefined = function (value, message) {
+      var result = (value === undefined);
+      this.pushResult({
+        result:   result,
+        actual:   result,
+        expected: undefined,
+        message:  message
+      });
+    };
+    QUnit.assert.isFalse = function (value, message) {
+      this.pushResult({
+        result: (value === false),
+        actual: value,
+        expected: false,
+        message: message
+      });
+    };
+    QUnit.assert.isTrue = function (value, message) {
+      this.pushResult({
+        result: (value === true),
+        actual: value,
+        expected: true,
+        message: message
+      });
+    };
     // ========================================================================
     // a set of initialization specific unit tests.
     QUnit.module("Initialization tests");
     QUnit.test("Initial state check.", function (assert) {
       var spaceInvaders = new SpaceInvaders.Game();
       var initState = spaceInvaders.isInitialized();
-      assert.deepEqual(initState, false, "Init-state should be first false.");
+      assert.isFalse(initState, "Init-state should be first false.");
     });
     QUnit.test("Initial state check after initialization.", function (assert) {
       var spaceInvaders = new SpaceInvaders.Game();
-      assert.deepEqual(spaceInvaders.init(), true, "Initialization check.");
+      assert.isTrue(spaceInvaders.init(), "Initialization check.");
       var initState = spaceInvaders.isInitialized();
-      assert.deepEqual(initState, true, "Init-state should change to true.");
+      assert.isTrue(initState, "Init-state should change to true.");
+      // TODO check that scene exists.
     });
     QUnit.test("Re-initialization check.", function (assert) {
       var spaceInvaders = new SpaceInvaders.Game();
-      assert.deepEqual(spaceInvaders.init(), true, "Initialization check.");
-      assert.deepEqual(spaceInvaders.init(), false, "Initialization check.");
+      assert.isTrue(spaceInvaders.init(), "Initialization check.");
+      assert.isFalse(spaceInvaders.init(),"Initialization check.");
       var initState = spaceInvaders.isInitialized();
-      assert.deepEqual(initState, true, "Init-state should change to true.");
+      assert.isTrue(initState, "Init-state should change to true.");
     });
     QUnit.test("Missing canvas check.", function (assert) {
       // change the identifier of the target canvas temporarily.
@@ -42,9 +68,9 @@
 
       // check that things actually fail.
       var spaceInvaders = new SpaceInvaders.Game();
-      assert.deepEqual(spaceInvaders.init(), false, "Initialization fails.");
+      assert.isFalse(spaceInvaders.init(), "Initialization fails.");
       var initState = spaceInvaders.isInitialized();
-      assert.deepEqual(initState, false, "Init-state should remain false.");
+      assert.isFalse(initState, "Init-state should remain false.");
 
       // restore the original identifier back for the canvas.
       canvas.setAttribute("id", "game-canvas");
@@ -57,9 +83,9 @@
 
       // check that things actually fail.
       var spaceInvaders = new SpaceInvaders.Game();
-      assert.deepEqual(spaceInvaders.init(), false, "Initialization fails.");
+      assert.isFalse(spaceInvaders.init(), "Initialization fails.");
       var initState = spaceInvaders.isInitialized();
-      assert.deepEqual(initState, false, "Init-state should remain false.");
+      assert.isFalse(initState, "Init-state should remain false.");
 
       // restore (re-enable) the context retrieval functionality.
       canvas.getContext = originalGetContext;
