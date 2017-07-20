@@ -198,6 +198,8 @@ SpaceInvaders.TextEntity = function (game) {
   var font = "24pt monospace";
   /** The text align definition (start|end|center|left|right). */
   var align = "start";
+  /** The definition whether the entity should be rendered. */
+  var visible = true;
 
   this.update = function (dt) {
     // ...
@@ -208,21 +210,25 @@ SpaceInvaders.TextEntity = function (game) {
    * @param {CanvasRenderingContext2D} ctx The drawing context to use.
    */
   this.render = function (ctx) {
-    ctx.fillStyle = this.getFillStyle();
-    ctx.textAlign = this.getAlign();
-    ctx.font = this.getFont();
-    ctx.fillText(this.getText(), this.getX(), this.getY());
+    if (this.isVisible()) {
+      ctx.fillStyle = this.getFillStyle();
+      ctx.textAlign = this.getAlign();
+      ctx.font = this.getFont();
+      ctx.fillText(this.getText(), this.getX(), this.getY());
+    }
   }
 
   this.getText      = function () { return text;      }
   this.getFillStyle = function () { return fillStyle; }
   this.getFont      = function () { return font;      }
   this.getAlign     = function () { return align;     }
+  this.isVisible    = function () { return visible;   }
 
-  this.setText      = function (newText)  { text = newText;       }
-  this.setFillStyle = function (newStyle) { fillStyle = newStyle; }
-  this.setFont      = function (newFont)  { font = newFont;       }
-  this.setAlign     = function (newAlign) { align = newAlign;     }
+  this.setText      = function (newText)    { text = newText;       }
+  this.setFillStyle = function (newStyle)   { fillStyle = newStyle; }
+  this.setFont      = function (newFont)    { font = newFont;       }
+  this.setAlign     = function (newAlign)   { align = newAlign;     }
+  this.setVisible   = function (newVisible) { visible = newVisible; }
 }
 
 /** ***************************************************************************
