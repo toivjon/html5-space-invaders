@@ -112,6 +112,47 @@
           a.deepEqual(e.getX(), 313, "X-coordinate setter must set x-value.");
           a.deepEqual(e.getY(), 131, "Y-coordinate setter must set y-value.");
         });
+
+        QUnit.test("Check that text entity construction works correctly.", function (a) {
+          var e = new SpaceInvaders.TextEntity(this.game);
+
+          // check that default values get assigned correctly.
+          a.deepEqual(e.getText(), e.DEFAULT_TEXT, "Default text must be set.");
+          a.deepEqual(e.getFillStyle(), e.DEFAULT_FILL_STYLE, "Default fill style must be set.")
+          a.deepEqual(e.getFont(), e.DEFAULT_FONT, "Default font must be set.");
+          a.deepEqual(e.getAlign(), e.DEFAULT_ALIGN, "Default alignment must be set.");
+          a.deepEqual(e.isVisible(), e.DEFAULT_VISIBLE, "Default visible must be set.");
+
+          // set (i.e. change) all available definitions.
+          e.setText("foo");
+          e.setFillStyle("bar");
+          e.setFont("foobar");
+          e.setAlign("foo-bar");
+          e.setVisible(!e.DEFAULT_VISIBLE);
+
+          // check that setters work as expected.
+          a.deepEqual(e.getText(), "foo", "Text setter must work.");
+          a.deepEqual(e.getFillStyle(), "bar", "Fill style setter must work.")
+          a.deepEqual(e.getFont(), "foobar", "Font setter must work.");
+          a.deepEqual(e.getAlign(), "foo-bar", "Align setter must work.");
+          a.deepEqual(e.isVisible(), !e.DEFAULT_VISIBLE, "Visibility setter must work.");
+        });
+
+        QUnit.test("Check that text entity visiblity works correctly.", function (a) {
+          var e = new SpaceInvaders.TextEntity(this.game);
+          a.expect(1);
+
+          // construct a testing context object to calculate the amount of render calls.
+          var ctx = { fillText: function (x, y, z) { a.step("The fillText is called."); }}
+
+          // first check that a visible text entity will be rendered.
+          e.setVisible(true);
+          e.render(ctx);
+
+          // then check that the invisible text entity will not be rendered.
+          e.setVisible(false);
+          e.render(ctx);
+        });
       });
     });
     // ========================================================================

@@ -190,16 +190,27 @@ SpaceInvaders.Entity = function (game) {
 SpaceInvaders.TextEntity = function (game) {
   SpaceInvaders.Entity.call(this, game);
 
+  /** A constant default value for the text to be drawn. */
+  this.DEFAULT_TEXT = "";
+  /** A constant default fill style (i.e. color) for the text. */
+  this.DEFAULT_FILL_STYLE = "white";
+  /** A constant default font definition for the text. */
+  this.DEFAULT_FONT = "24pt monospace";
+  /** A constant default text alignment for the rendering. */
+  this.DEFAULT_ALIGN = "start";
+  /** A constant default visibility state for the text. */
+  this.DEFAULT_VISIBLE = true;
+
   /** The text to be rendered. */
-  var text = "";
+  var text = this.DEFAULT_TEXT;
   /** The fill style (i.e. color) used to draw the text. */
-  var fillStyle = "white";
+  var fillStyle = this.DEFAULT_FILL_STYLE;
   /** The target font description i.e. size, font family, etc. */
-  var font = "24pt monospace";
+  var font = this.DEFAULT_FONT;
   /** The text align definition (start|end|center|left|right). */
-  var align = "start";
+  var align = this.DEFAULT_ALIGN;
   /** The definition whether the entity should be rendered. */
-  var visible = true;
+  var visible = this.DEFAULT_VISIBLE;
 
   this.update = function (dt) {
     // ...
