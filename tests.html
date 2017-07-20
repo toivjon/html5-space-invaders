@@ -18,18 +18,18 @@
     // a set of initialization specific unit tests.
     QUnit.module("Initialization tests");
     QUnit.test("Initial state check.", function (assert) {
-      var spaceInvaders = new SpaceInvaders();
+      var spaceInvaders = new SpaceInvaders.Game();
       var initState = spaceInvaders.isInitialized();
       assert.deepEqual(initState, false, "Init-state should be first false.");
     });
     QUnit.test("Initial state check after initialization.", function (assert) {
-      var spaceInvaders = new SpaceInvaders();
+      var spaceInvaders = new SpaceInvaders.Game();
       assert.deepEqual(spaceInvaders.init(), true, "Initialization check.");
       var initState = spaceInvaders.isInitialized();
       assert.deepEqual(initState, true, "Init-state should change to true.");
     });
     QUnit.test("Re-initialization check.", function (assert) {
-      var spaceInvaders = new SpaceInvaders();
+      var spaceInvaders = new SpaceInvaders.Game();
       assert.deepEqual(spaceInvaders.init(), true, "Initialization check.");
       assert.deepEqual(spaceInvaders.init(), false, "Initialization check.");
       var initState = spaceInvaders.isInitialized();
@@ -41,7 +41,7 @@
       canvas.setAttribute("id", "foo-canvas");
 
       // check that things actually fail.
-      var spaceInvaders = new SpaceInvaders();
+      var spaceInvaders = new SpaceInvaders.Game();
       assert.deepEqual(spaceInvaders.init(), false, "Initialization fails.");
       var initState = spaceInvaders.isInitialized();
       assert.deepEqual(initState, false, "Init-state should remain false.");
@@ -56,7 +56,7 @@
       canvas.getContext = function (value) { return null; }
 
       // check that things actually fail.
-      var spaceInvaders = new SpaceInvaders();
+      var spaceInvaders = new SpaceInvaders.Game();
       assert.deepEqual(spaceInvaders.init(), false, "Initialization fails.");
       var initState = spaceInvaders.isInitialized();
       assert.deepEqual(initState, false, "Init-state should remain false.");
