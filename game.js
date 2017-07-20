@@ -147,6 +147,80 @@ SpaceInvaders.Game = function () {
 };
 
 /** ***************************************************************************
+ * An entity abstraction for all game objects within the Space Invaders game.
+ *
+ * This class acts as the root of all entities within the game scene. It does
+ * contain all the shared definitions that must be present within all entities
+ * that are created into the game scene. This also includes the root game and
+ * scene instances as well as the 2d-coordinates of the entity.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the target game instance.
+ */
+SpaceInvaders.Entity = function (game) {
+  /** A reference to the root game instance. */
+  this.game = game;
+  /** A reference to the used scene instance. */
+  this.scene = game.getScene();
+
+  /** The x-coordinate position of the entity. */
+  var x = 0;
+  /** The y-coordinate position of the entity. */
+  var y = 0;
+
+  this.getX = function () { return x; }
+  this.getY = function () { return y; }
+
+  this.setX = function (newX) { x = newX; }
+  this.setY = function (newY) { y = newY; }
+};
+
+/** ***************************************************************************
+ * A textual entity for all texts used in the Space Invaders game.
+ *
+ * This class presents a textual entity within the game scene. It does really
+ * an encapsulation of the 2d drawing context textual presentation functions.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the target game instance.
+ */
+SpaceInvaders.TextEntity = function (game) {
+  SpaceInvaders.Entity.call(this, game);
+
+  /** The text to be rendered. */
+  var text = "";
+  /** The fill style (i.e. color) used to draw the text. */
+  var fillStyle = "white";
+  /** The target font description i.e. size, font family, etc. */
+  var font = "24pt monospace";
+  /** The text align definition (start|end|center|left|right). */
+  var align = "start";
+
+  this.update = function (dt) {
+    // ...
+  }
+
+  /** *************************************************************************
+   * Render (i.e. draw) the text on the screen.
+   * @param {CanvasRenderingContext2D} ctx The drawing context to use.
+   */
+  this.render = function (ctx) {
+    ctx.fillStyle = this.getFillStyle();
+    ctx.textAlign = this.getAlign();
+    ctx.font = this.getFont();
+    ctx.fillText(this.getText(), this.getX(), this.getY());
+  }
+
+  this.getText      = function () { return text;      }
+  this.getFillStyle = function () { return fillStyle; }
+  this.getFont      = function () { return font;      }
+  this.getAlign     = function () { return align;     }
+
+  this.setText      = function (newText)  { text = newText;       }
+  this.setFillStyle = function (newStyle) { fillStyle = newStyle; }
+  this.setFont      = function (newFont)  { font = newFont;       }
+  this.setAlign     = function (newAlign) { align = newAlign;     }
+}
+
+/** ***************************************************************************
  * The scene used within the Space Invaders game application.
  *
  * Space Invaders contains only one scene that is kept visible during the whole
@@ -162,12 +236,35 @@ SpaceInvaders.Scene = function (game) {
   /** A reference to the root game instance. */
   this.game = game;
 
+  var score1Caption;
+  var hiScoreCaption;
+  var score2Caption;
+
+  // initialize the static caption for the 1st player score.
+  score1Caption = new SpaceInvaders.TextEntity(game);
+  score1Caption.setText("SCORE< 1 >");
+  score1Caption.setX(50);
+  score1Caption.setY(40);
+
+  // initialize the static caption for the high score.
+  hiScoreCaption = new SpaceInvaders.TextEntity(game);
+  hiScoreCaption.setText("HI-SCORE");
+  hiScoreCaption.setAlign("center");
+  hiScoreCaption.setX(672 / 2);
+  hiScoreCaption.setY(40);
+
+  // initialize the static caption for the 1st player score.
+  score2Caption = new SpaceInvaders.TextEntity(game);
+  score2Caption.setText("SCORE< 2 >");
+  score2Caption.setX(672 - 225);
+  score2Caption.setY(40);
+
   /** *************************************************************************
    * Update (i.e. tick) the all the game logic within the scene.
    * @param {double} dt The delta time from the previous tick operation.
    */
   this.update = function (dt) {
-
+    // ...
   };
 
   /** *************************************************************************
@@ -175,6 +272,8 @@ SpaceInvaders.Scene = function (game) {
    * @param {CanvasRenderingContext2D} ctx The drawing context to use.
    */
   this.render = function (ctx) {
-
+    score1Caption.render(ctx);
+    hiScoreCaption.render(ctx);
+    score2Caption.render(ctx);
   };
 }
