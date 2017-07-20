@@ -40,55 +40,58 @@
       });
     };
     // ========================================================================
-    // a set of initialization specific unit tests.
-    QUnit.module("Initialization tests");
-    QUnit.test("Initial state check.", function (assert) {
-      var spaceInvaders = new SpaceInvaders.Game();
-      var initState = spaceInvaders.isInitialized();
-      assert.isFalse(initState, "Init-state should be first false.");
-    });
-    QUnit.test("Initial state check after initialization.", function (assert) {
-      var spaceInvaders = new SpaceInvaders.Game();
-      assert.isTrue(spaceInvaders.init(), "Initialization check.");
-      var initState = spaceInvaders.isInitialized();
-      assert.isTrue(initState, "Init-state should change to true.");
-      // TODO check that scene exists.
-    });
-    QUnit.test("Re-initialization check.", function (assert) {
-      var spaceInvaders = new SpaceInvaders.Game();
-      assert.isTrue(spaceInvaders.init(), "Initialization check.");
-      assert.isFalse(spaceInvaders.init(),"Initialization check.");
-      var initState = spaceInvaders.isInitialized();
-      assert.isTrue(initState, "Init-state should change to true.");
-    });
-    QUnit.test("Missing canvas check.", function (assert) {
-      // change the identifier of the target canvas temporarily.
-      var canvas = document.getElementById("game-canvas");
-      canvas.setAttribute("id", "foo-canvas");
+    QUnit.module("Space Invaders tests", function (hooks) {
+      hooks.beforeEach(function () {
+        this.game = new SpaceInvaders.Game();
+      });
 
-      // check that things actually fail.
-      var spaceInvaders = new SpaceInvaders.Game();
-      assert.isFalse(spaceInvaders.init(), "Initialization fails.");
-      var initState = spaceInvaders.isInitialized();
-      assert.isFalse(initState, "Init-state should remain false.");
+      QUnit.test("Check game state without calling init.", function (a) {
+        a.isFalse(this.game.isInitialized(), "Init state must be false.");
+      });
 
-      // restore the original identifier back for the canvas.
-      canvas.setAttribute("id", "game-canvas");
-    });
-    QUnit.test("Missing 2D drawing context check.", function (assert) {
-      // disable the context retrieval functionality temporarily.
-      var canvas = document.getElementById("game-canvas");
-      var originalGetContext = canvas.getContext;
-      canvas.getContext = function (value) { return null; }
+      QUnit.test("Check the behavior when canvas is missing.", function (a) {
+        // change the identifier of the target canvas temporarily.
+        var canvas = document.getElementById("game-canvas");
+        canvas.setAttribute("id", "foo-canvas");
 
-      // check that things actually fail.
-      var spaceInvaders = new SpaceInvaders.Game();
-      assert.isFalse(spaceInvaders.init(), "Initialization fails.");
-      var initState = spaceInvaders.isInitialized();
-      assert.isFalse(initState, "Init-state should remain false.");
+        // check that things actually fail.
+        a.isFalse(this.game.init(), "Initialization fails.");
+        var initState = this.game.isInitialized();
+        a.isFalse(initState, "Init-state should remain false.");
 
-      // restore (re-enable) the context retrieval functionality.
-      canvas.getContext = originalGetContext;
+        // restore the original identifier back for the canvas.
+        canvas.setAttribute("id", "game-canvas");
+      });
+
+      QUnit.test("Recognization of missing 2D context.", function (a) {
+        // disable the context retrieval functionality temporarily.
+        var canvas = document.getElementById("game-canvas");
+        var originalGetContext = canvas.getContext;
+        canvas.getContext = function (value) { return null; }
+
+        // check that things actually fail.
+        a.isFalse(this.game.init(), "Initialization fails.");
+        var initState = this.game.isInitialized();
+        a.isFalse(initState, "Init-state should remain false.");
+
+        // restore (re-enable) the context retrieval functionality.
+        canvas.getContext = originalGetContext;
+      });
+
+      QUnit.module("Initialized Space Invaders tests", function (hooks) {
+        hooks.beforeEach(function () {
+          this.game.init();
+        });
+
+        QUnit.test("Check game state after calling init.", function (a) {
+          a.isTrue(this.game.isInitialized(), "Init state must be true.");
+        });
+
+        QUnit.test("Check that reinitialization attempts fail.", function (a) {
+          a.isFalse(this.game.init(), "Re-initialization must return false.");
+          a.isTrue(this.game.isInitialized(), "Init state must stay true.");
+        })
+      });
     });
     // ========================================================================
   </script>
