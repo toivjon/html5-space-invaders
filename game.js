@@ -340,7 +340,7 @@ SpaceInvaders.Scene = function (game) {
 
   // initialize the static caption for the 1st player score.
   score1Caption = new SpaceInvaders.TextEntity(game);
-  score1Caption.setText("SCORE< 1 >");
+  score1Caption.setText("SCORE<1>");
   score1Caption.setAlign("center");
   score1Caption.setX(125);
   score1Caption.setY(40);
@@ -354,7 +354,7 @@ SpaceInvaders.Scene = function (game) {
 
   // initialize the static caption for the 1st player score.
   score2Caption = new SpaceInvaders.TextEntity(game);
-  score2Caption.setText("SCORE< 2 >");
+  score2Caption.setText("SCORE<2>");
   score2Caption.setAlign("center");
   score2Caption.setX(672 - 130);
   score2Caption.setY(score1Caption.getY());
