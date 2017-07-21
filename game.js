@@ -1,6 +1,27 @@
 /** A namespace for the Space Invaders game. */
 var SpaceInvaders = SpaceInvaders || {};
 
+/** *************************************************************************
+ * A helper utility to create a four digit string from the given score.
+ *
+ * Four digit string is ensured by prepending additional zeroes to the given
+ * value when necessary. For example value 12 is transformed to "0012" string.
+ *
+ * @param {number} score The score to be converted into a string.
+ */
+SpaceInvaders.toScoreString = function (score) {
+  var result = "NaN";
+  if (typeof score == 'number') {
+    result = score.toString();
+    var difference = (4 - result.length);
+    if (difference >= 0) {
+      result = "0000" + result;
+    }
+    result = result.substring(result.length - 4);
+  }
+  return result;
+}
+
 /** ***************************************************************************
  * The root game structure for the Space Invaders game.
  *
@@ -35,6 +56,13 @@ SpaceInvaders.Game = function () {
   var previousTickTime = 0;
   /** A delta accumulator that collects the exceeding update time delta. */
   var deltaAccumulator = 0;
+
+  /** The score of the 1st player. */
+  var player1Score = 0;
+  /** The score of the 2nd player. */
+  var player2Score = 0;
+  /** The hi-score of the current game instace. */
+  var hiScore = 0;
 
   /** ***********************************************************************
     * Get the definition whether the game is initialized.
@@ -144,6 +172,14 @@ SpaceInvaders.Game = function () {
       this.run(0);
     }
   };
+
+  this.getPlayer1Score  = function () { return player1Score;  }
+  this.getPlayer2Score  = function () { return player2Score;  }
+  this.getHiScore       = function () { return hiScore;       }
+
+  this.setPlayer1Score  = function (newScore) { player1Score = newScore;  }
+  this.setPlayer2Score  = function (newScore) { player2Score = newScore;  }
+  this.setHiScore       = function (newScore) { hiScore = newScore;       }
 };
 
 /** ***************************************************************************
@@ -349,6 +385,11 @@ SpaceInvaders.Scene = function (game) {
    * @param {double} dt The delta time from the previous tick operation.
    */
   this.update = function (dt) {
+    // ensure that all visible score-markers are up-to-date.
+    score1Text.setText(SpaceInvaders.toScoreString(game.getPlayer1Score()));
+    score2Text.setText(SpaceInvaders.toScoreString(game.getPlayer2Score()));
+    hiScoreText.setText(SpaceInvaders.toScoreString(game.getHiScore()));
+
     score1Caption.update(dt);
     hiScoreCaption.update(dt);
     score2Caption.update(dt);
