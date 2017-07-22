@@ -216,6 +216,41 @@
           a.deepEqual(e.getImage(), img, "Image setter must work.");
         });
 
+        QUnit.test("Check that state changing works correctly.", function (a) {
+          a.expect(8);
+          var scene = this.game.getScene();
+
+          var state1 = {
+            enter: function () {
+              a.step("1. state enter is called.");
+            },
+            exit: function () {
+              a.step("1. state exit is called.")
+            }
+          };
+
+          var state2 = {
+            enter: function () {
+              a.step("2. state enter is called.");
+            },
+            exit: function () {
+              a.step("2. state exit is called.")
+            }
+          };
+
+          // assign the state as the active state.
+          scene.setState(state1);
+          a.deepEqual(scene.getState(), state1, "1. state must be assigned.");
+
+          // assign the another state as the active state.
+          scene.setState(state2);
+          a.deepEqual(scene.getState(), state2, "2. state must be assigned.");
+
+          // assign the first state back again.
+          scene.setState(state1);
+          a.deepEqual(scene.getState(), state1, "1. state must be assigned.");
+        });
+
       });
     });
     // ========================================================================

@@ -44,6 +44,11 @@ SpaceInvaders.Game = function () {
   /** A constant definition for the game framerate. */
   var FPS = (1000.0 / 60.0);
 
+  /** A constant for the number one keycode. */
+  this.KEY_1 = 49;
+  /** A constant for the number two keycode. */
+  this.KEY_2 = 50;
+
   /** A definition whether the game is initialized or not. */
   var initialized = false;
   /** A reference to the HTML5 canvas used as the rendering target. */
@@ -127,6 +132,9 @@ SpaceInvaders.Game = function () {
 
     // initialize the only scene used within the application.
     scene = new SpaceInvaders.Scene(this);
+
+    // construct and assign the initial welcoming state.
+    scene.setState(new SpaceInvaders.WelcomeState(this));
 
     // when the code reaches this point, the initialization succeeded.
     initialized = true;
@@ -557,6 +565,42 @@ SpaceInvaders.WelcomeState = function (game) {
     tableRow3Text.render(ctx);
     tableRow4Text.render(ctx);
   }
+
+  /** *************************************************************************
+   * A function that is called when the state is being entered.
+   *
+   * This function is called before the state is being updated (i.e. ticked)
+   * for a first time. This makes it an ideal place to put all listener logic.
+   */
+  this.enter = function () {
+    document.addEventListener("keyup", this.keyUp);
+  }
+
+  /** *************************************************************************
+   * A function that is called when the state is being exited.
+   *
+   * This function is called after the state is being updated (i.e. ticked)
+   * for the last time. This makes it an ideal place to cleanup listeners etc.
+   */
+  this.exit = function () {
+    document.removeEventListener("keyup", this.keyUp);
+  }
+
+  /** *************************************************************************
+   * A key listener function called when the user releases a key press.
+   * @param {KeyboardEvent} e The keyboard event received from the DOM.
+   */
+  this.keyUp = function (e) {
+    var key = event.keyCode ? event.keyCode : event.which;
+    switch (key) {
+      case game.KEY_1:
+        // TODO ...
+        break;
+      case game.KEY_2:
+        // TODO ...
+        break;
+    }
+  }
 }
 
 /** ***************************************************************************
@@ -627,8 +671,29 @@ SpaceInvaders.Scene = function (game) {
   score2Text.setX(score2Caption.getX());
   score2Text.setY(score1Text.getY());
 
-  // construct and assign the initial welcoming state.
-  state = new SpaceInvaders.WelcomeState(game);
+  /** *************************************************************************
+   * Set and enter into the given state.
+   *
+   * The previous state (if any) will be first exited by calling the #exit so
+   * it can perform any cleanup e.g. removing listeners from DOM objects etc.
+   * When the new state is assigned, it will be entered with the #enter method.
+   *
+   * @param {SpaceInvaders.<*>State} newState A state to be assigned.
+   */
+  this.setState = function (newState) {
+    // exit from the previous state.
+    if (state) {
+      state.exit();
+    }
+
+    // assign the new state.
+    state = newState;
+
+    // enter into the new state.
+    if (state) {
+      state.enter();
+    }
+  }
 
   /** *************************************************************************
    * Update (i.e. tick) the all the game logic within the scene.
@@ -649,7 +714,7 @@ SpaceInvaders.Scene = function (game) {
     score2Text.update(dt);
 
     state.update(dt);
-  };
+  }
 
   /** *************************************************************************
    * Render (i.e. draw) the all visible stuff.
@@ -665,5 +730,7 @@ SpaceInvaders.Scene = function (game) {
     score2Text.render(ctx);
 
     state.render(ctx);
-  };
+  }
+
+  this.getState = function () { return state; }
 }
