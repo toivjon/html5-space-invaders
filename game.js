@@ -64,6 +64,9 @@ SpaceInvaders.Game = function () {
   /** The hi-score of the current game instace. */
   var hiScore = 0;
 
+  /** The sprite sheet containing all image assets for the game. */
+  var spriteSheet = undefined;
+
   /** ***********************************************************************
     * Get the definition whether the game is initialized.
     *
@@ -116,6 +119,11 @@ SpaceInvaders.Game = function () {
       console.error("Unable to get a reference to 2D draw context.");
       return false;
     }
+
+    // TODO make this a synchronous load to avoid invalid references?
+    // load the source sprite sheet as an image.
+    spriteSheet = new Image();
+    spriteSheet.src = "space_invaders_spritesheet.png";
 
     // initialize the only scene used within the application.
     scene = new SpaceInvaders.Scene(this);
@@ -176,6 +184,7 @@ SpaceInvaders.Game = function () {
   this.getPlayer1Score  = function () { return player1Score;  }
   this.getPlayer2Score  = function () { return player2Score;  }
   this.getHiScore       = function () { return hiScore;       }
+  this.getSpriteSheet   = function () { return spriteSheet;   }
 
   this.setPlayer1Score  = function (newScore) { player1Score = newScore;  }
   this.setPlayer2Score  = function (newScore) { player2Score = newScore;  }
@@ -214,6 +223,68 @@ SpaceInvaders.Entity = function (game) {
   this.setX = function (newX) { x = newX; }
   this.setY = function (newY) { y = newY; }
 };
+
+/** ***************************************************************************
+ * A sprite entity for image sprites for the Space Invaders game.
+ *
+ * This entity presents a drawable sprite entity that is drawn from an external
+ * image file provided with the #setImage function. Note that it is typically
+ * a good idea to put all sprites in a single sprite sheet so the same image is
+ * being loaded only once and can be therefore used with all sprites.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the root game instance.
+ */
+SpaceInvaders.SpriteEntity = function (game) {
+  SpaceInvaders.Entity.call(this, game);
+
+  /** A constant default for the sprite width. */
+  this.DEFAULT_WIDTH = 0;
+  /** A constant default for the sprite height. */
+  this.DEFAULT_HEIGHT = 0;
+  /** A constant default for the sprite clipping x-coordinate. */
+  this.DEFAULT_CLIP_X = 0;
+  /** A constant default for the sprite clipping y-coordinate. */
+  this.DEFAULT_CLIP_Y = 0;
+  /** A constant default for the sprite image. */
+  this.DEFAULT_IMAGE = undefined;
+
+  /** The width of the sprite. */
+  var width = this.DEFAULT_WIDTH;
+  /** The height of the sprite. */
+  var height = this.DEFAULT_HEIGHT;
+  /** The clipping x-coordinate of the image. */
+  var clipX = this.DEFAULT_CLIP_X;
+  /** The clipping y-coordinate of the image. */
+  var clipY = this.DEFAULT_CLIP_Y;
+  /** The source image to render sprite from. */
+  var image = this.DEFAULT_IMAGE;
+
+  this.render = function (ctx) {
+    if (image) {
+      ctx.drawImage(image,
+        this.getClipX(),
+        this.getClipY(),
+        this.getWidth(),
+        this.getHeight(),
+        this.getX(),
+        this.getY(),
+        this.getWidth(),
+        this.getHeight());
+    }
+  }
+
+  this.getWidth   = function () { return width;   }
+  this.getHeight  = function () { return height;  }
+  this.getClipX   = function () { return clipX;   }
+  this.getClipY   = function () { return clipY;   }
+  this.getImage   = function () { return image;   }
+
+  this.setWidth   = function (newWidth)   { width = newWidth;   }
+  this.setHeight  = function (newHeight)  { height = newHeight; }
+  this.setClipX   = function (newClip)    { clipX = newClip;    }
+  this.setClipY   = function (newClip)    { clipY = newClip;    }
+  this.setImage   = function (newImage)   { image = newImage;   }
+}
 
 /** ***************************************************************************
  * A textual entity for all texts used in the Space Invaders game.
@@ -334,6 +405,14 @@ SpaceInvaders.WelcomeState = function (game) {
   var multiPlayerText;
   var controlsText;
   var tableCaptionText;
+  var tableRow1Sprite;
+  var tableRow1Text;
+  var tableRowS2prite;
+  var tableRow2Text;
+  var tableRow3Sprite;
+  var tableRow3Text;
+  var tableRow4Sprite;
+  var tableRow4Text;
 
   // initialize the play game text.
   playText = new SpaceInvaders.TextEntity(game);
@@ -377,6 +456,74 @@ SpaceInvaders.WelcomeState = function (game) {
   tableCaptionText.setX(playText.getX());
   tableCaptionText.setY(controlsText.getY() + 75);
 
+  // initialize the 1st table row sprite image.
+  tableRow1Sprite = new SpaceInvaders.SpriteEntity(game);
+  tableRow1Sprite.setImage(game.getSpriteSheet());
+  tableRow1Sprite.setX(playText.getX() - 130);
+  tableRow1Sprite.setY(tableCaptionText.getY() + 25);
+  tableRow1Sprite.setWidth(43);
+  tableRow1Sprite.setHeight(19);
+  tableRow1Sprite.setClipX(5);
+  tableRow1Sprite.setClipY(92);
+
+  // initialize the 1st table row text.
+  tableRow1Text = new SpaceInvaders.TextEntity(game);
+  tableRow1Text.setText("= ?  MYSTERY");
+  tableRow1Text.setX(tableRow1Sprite.getX() + 10 + tableRow1Sprite.getWidth());
+  tableRow1Text.setY(tableRow1Sprite.getY() + 20);
+
+  // initialize the 2nd table row sprite image.
+  tableRow2Sprite = new SpaceInvaders.SpriteEntity(game);
+  tableRow2Sprite.setImage(game.getSpriteSheet());
+  tableRow2Sprite.setX(playText.getX() - 120);
+  tableRow2Sprite.setY(tableRow1Sprite.getY() + 35);
+  tableRow2Sprite.setWidth(24);
+  tableRow2Sprite.setHeight(24);
+  tableRow2Sprite.setClipX(5);
+  tableRow2Sprite.setClipY(63);
+
+  // initialize the 2nd table row text.
+  tableRow2Text = new SpaceInvaders.TextEntity(game);
+  tableRow2Text.setText("= 30 POINTS");
+  tableRow2Text.setX(tableRow1Text.getX());
+  tableRow2Text.setY(tableRow2Sprite.getY() + 22);
+
+  // initialize the 3rd table row sprite image.
+  tableRow3Sprite = new SpaceInvaders.SpriteEntity(game);
+  tableRow3Sprite.setImage(game.getSpriteSheet());
+  tableRow3Sprite.setX(playText.getX() - 125);
+  tableRow3Sprite.setY(tableRow2Sprite.getY() + 35);
+  tableRow3Sprite.setWidth(33);
+  tableRow3Sprite.setHeight(24);
+  tableRow3Sprite.setClipX(5);
+  tableRow3Sprite.setClipY(34);
+
+  // initialize the 3rd table row text.
+  tableRow3Text = new SpaceInvaders.TextEntity(game);
+  tableRow3Text.setText("= 20 POINTS");
+  tableRow3Text.setX(tableRow1Text.getX());
+  tableRow3Text.setY(tableRow3Sprite.getY() + 22);
+
+  // initialize the 4th table row sprite image.
+  tableRow4Sprite = new SpaceInvaders.SpriteEntity(game);
+  tableRow4Sprite.setImage(game.getSpriteSheet());
+  tableRow4Sprite.setX(playText.getX() - 125);
+  tableRow4Sprite.setY(tableRow3Sprite.getY() + 35);
+  tableRow4Sprite.setWidth(36);
+  tableRow4Sprite.setHeight(24);
+  tableRow4Sprite.setClipX(5);
+  tableRow4Sprite.setClipY(5);
+
+  // initialize the 4th table row text.
+  tableRow4Text = new SpaceInvaders.TextEntity(game);
+  tableRow4Text.setText("= 10 POINTS");
+  tableRow4Text.setX(tableRow1Text.getX());
+  tableRow4Text.setY(tableRow4Sprite.getY() + 22);
+
+  /** *************************************************************************
+   * Update (i.e. tick) the the logic within the state.
+   * @param {double} dt The delta time from the previous tick operation.
+   */
   this.update = function (dt) {
     playText.update(dt);
     nameText.update(dt);
@@ -386,6 +533,10 @@ SpaceInvaders.WelcomeState = function (game) {
     tableCaptionText.update(dt);
   }
 
+  /** *************************************************************************
+   * Render (i.e. draw) the state on the screen.
+   * @param {CanvasRenderingContext2D} ctx The drawing context to use.
+   */
   this.render = function (ctx) {
     playText.render(ctx);
     nameText.render(ctx);
@@ -393,6 +544,18 @@ SpaceInvaders.WelcomeState = function (game) {
     multiPlayerText.render(ctx);
     controlsText.render(ctx);
     tableCaptionText.render(ctx);
+
+    // render score advance table row sprites.
+    tableRow1Sprite.render(ctx);
+    tableRow2Sprite.render(ctx);
+    tableRow3Sprite.render(ctx);
+    tableRow4Sprite.render(ctx);
+
+    // render score advance table row texts.
+    tableRow1Text.render(ctx);
+    tableRow2Text.render(ctx);
+    tableRow3Text.render(ctx);
+    tableRow4Text.render(ctx);
   }
 }
 

@@ -189,6 +189,33 @@
           e.update(0);
           e.render(ctx);
         });
+
+        QUnit.test("Check that sprite entity construction works corretly.", function (a) {
+          var e = new SpaceInvaders.SpriteEntity(this.game);
+
+          // check that default value get assigned correctly.
+          a.deepEqual(e.getWidth(), e.DEFAULT_WIDTH, "Default width must be set.");
+          a.deepEqual(e.getHeight(), e.DEFAULT_HEIGHT, "Default height must be set.");
+          a.deepEqual(e.getClipX(), e.DEFAULT_CLIP_X, "Default x-axis clip must be set.");
+          a.deepEqual(e.getClipY(), e.DEFAULT_CLIP_Y, "Default y-axis clip must be set.");
+          a.deepEqual(e.getImage(), e.DEFAULT_IMAGE, "Default image definition must be set.");
+
+          // set (i.e. change) all available definitions.
+          var img = new Image();
+          e.setWidth(1);
+          e.setHeight(2);
+          e.setClipX(3);
+          e.setClipY(4);
+          e.setImage(img);
+
+          // check that setters work as expected.
+          a.deepEqual(e.getWidth(), 1, "Width setter must work.");
+          a.deepEqual(e.getHeight(), 2, "Height setter must work.");
+          a.deepEqual(e.getClipX(), 3, "X-axis clip setter must work.");
+          a.deepEqual(e.getClipY(), 4, "Y-axis clip setter must work.");
+          a.deepEqual(e.getImage(), img, "Image setter must work.");
+        });
+
       });
     });
     // ========================================================================
