@@ -315,6 +315,88 @@ SpaceInvaders.TextEntity = function (game) {
 }
 
 /** ***************************************************************************
+ * A welcome state for the Space Invaders game.
+ *
+ * This state contains the definitions required to show the welcoming message
+ * to the user(s). It contains the game name along with the score instructions
+ * and an instruction how to start the game. It does not however contain a
+ * complex set of game logics as the actual game simulation is not required.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the root game instance.
+ */
+SpaceInvaders.WelcomeState = function (game) {
+  /** A reference to the root game instance. */
+  this.game = game;
+
+  var playText;
+  var nameText;
+  var singlePlayerText;
+  var multiPlayerText;
+  var controlsText;
+  var tableCaptionText;
+
+  // initialize the play game text.
+  playText = new SpaceInvaders.TextEntity(game);
+  playText.setText("PLAY");
+  playText.setAlign("center");
+  playText.setX(672 / 2);
+  playText.setY(175);
+
+  // initialize the game name text.
+  nameText = new SpaceInvaders.TextEntity(game);
+  nameText.setText("HTML5 SPACE INVADERS");
+  nameText.setAlign("center");
+  nameText.setFillStyle("#20ff20");
+  nameText.setX(playText.getX());
+  nameText.setY(playText.getY() + 75);
+
+  // initialize the single player text.
+  singlePlayerText = new SpaceInvaders.TextEntity(game);
+  singlePlayerText.setText("PRESS [1] FOR A 1 PLAYER GAME");
+  singlePlayerText.setAlign("center");
+  singlePlayerText.setX(playText.getX());
+  singlePlayerText.setY(nameText.getY() + 75);
+
+  // initialize the multiplayer text.
+  multiPlayerText = new SpaceInvaders.TextEntity(game);
+  multiPlayerText.setText("PRESS [2] FOR A 2 PLAYER GAME");
+  multiPlayerText.setAlign("center");
+  multiPlayerText.setX(playText.getX());
+  multiPlayerText.setY(singlePlayerText.getY() + 50);
+
+  controlsText = new SpaceInvaders.TextEntity(game);
+  controlsText.setText("USE ARROW KEYS AND SPACEBAR TO PLAY");
+  controlsText.setAlign("center");
+  controlsText.setX(playText.getX());
+  controlsText.setY(multiPlayerText.getY() + 75);
+
+  // initiailize the score advance table text.
+  tableCaptionText = new SpaceInvaders.TextEntity(game);
+  tableCaptionText.setText("-- SCORE ADVANCE TABLE --");
+  tableCaptionText.setAlign("center");
+  tableCaptionText.setX(playText.getX());
+  tableCaptionText.setY(controlsText.getY() + 75);
+
+  this.update = function (dt) {
+    playText.update(dt);
+    nameText.update(dt);
+    singlePlayerText.update(dt);
+    multiPlayerText.update(dt);
+    controlsText.update(dt);
+    tableCaptionText.update(dt);
+  }
+
+  this.render = function (ctx) {
+    playText.render(ctx);
+    nameText.render(ctx);
+    singlePlayerText.render(ctx);
+    multiPlayerText.render(ctx);
+    controlsText.render(ctx);
+    tableCaptionText.render(ctx);
+  }
+}
+
+/** ***************************************************************************
  * The scene used within the Space Invaders game application.
  *
  * Space Invaders contains only one scene that is kept visible during the whole
@@ -337,6 +419,8 @@ SpaceInvaders.Scene = function (game) {
   var score1Text;
   var hiScoreText;
   var score2Text;
+
+  var state;
 
   // initialize the static caption for the 1st player score.
   score1Caption = new SpaceInvaders.TextEntity(game);
@@ -380,6 +464,9 @@ SpaceInvaders.Scene = function (game) {
   score2Text.setX(score2Caption.getX());
   score2Text.setY(score1Text.getY());
 
+  // construct and assign the initial welcoming state.
+  state = new SpaceInvaders.WelcomeState(game);
+
   /** *************************************************************************
    * Update (i.e. tick) the all the game logic within the scene.
    * @param {double} dt The delta time from the previous tick operation.
@@ -397,6 +484,8 @@ SpaceInvaders.Scene = function (game) {
     score1Text.update(dt);
     hiScoreText.update(dt);
     score2Text.update(dt);
+
+    state.update(dt);
   };
 
   /** *************************************************************************
@@ -411,5 +500,7 @@ SpaceInvaders.Scene = function (game) {
     score1Text.render(ctx);
     hiScoreText.render(ctx);
     score2Text.render(ctx);
+
+    state.render(ctx);
   };
 }
