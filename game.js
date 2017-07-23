@@ -689,7 +689,7 @@ SpaceInvaders.PlayPlayerState = function (game) {
   this.update = function (dt) {
     tickCounter--;
     if (tickCounter <= 0) {
-      game.getScene().setState(new SpaceInvaders.WelcomeState(game));
+      game.getScene().setState(new SpaceInvaders.IngameState(game));
     }
   }
 
@@ -720,6 +720,39 @@ SpaceInvaders.PlayPlayerState = function (game) {
   this.exit = function () {
     // ...
   }
+}
+
+/** ***************************************************************************
+ * The ingame state for the Space Invaders game.
+ *
+ * This is the state where the player(s) actually play the game. Here we allow
+ * users to move and fire with the turret so they can prevent the earth from
+ * being invaded by the invaders coming from the space.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the root game instance.
+ */
+SpaceInvaders.IngameState = function (game) {
+  /** A reference to the root game instance. */
+  this.game = game;
+
+  // TODO add line to x=0, y=687, width=672, height=1
+
+  this.update = function (dt) {
+    // ...
+  }
+
+  this.render = function (ctx) {
+    // ...
+  }
+
+  this.enter = function () {
+    // ...
+  }
+
+  this.exit = function () {
+    // ...
+  }
+
 }
 
 /** ***************************************************************************
