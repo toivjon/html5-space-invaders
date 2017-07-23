@@ -826,14 +826,24 @@ SpaceInvaders.IngameState = function (game) {
   /** A reference to the root game instance. */
   this.game = game;
 
-  // TODO add line to x=0, y=687, width=672, height=1
+  var footerLine;
+
+  // initialize the green static footer line at the bottom of the screen.
+  footerLine = new SpaceInvaders.SpriteEntity(game);
+  footerLine.setImage(game.getSpriteSheet());
+  footerLine.setX(0);
+  footerLine.setY(717);
+  footerLine.setWidth(672);
+  footerLine.setHeight(3);
+  footerLine.setClipX(0);
+  footerLine.setClipY(117);
 
   this.update = function (dt) {
     // ...
   }
 
   this.render = function (ctx) {
-    // ...
+    footerLine.render(ctx);
   }
 
   this.enter = function () {
