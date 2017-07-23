@@ -123,6 +123,8 @@
           a.deepEqual(e.getFont(), e.DEFAULT_FONT, "Default font must be set.");
           a.deepEqual(e.getAlign(), e.DEFAULT_ALIGN, "Default alignment must be set.");
           a.deepEqual(e.isVisible(), e.DEFAULT_VISIBLE, "Default visible must be set.");
+          a.deepEqual(e.getBlinkCount(), e.DEFAULT_BLINK_COUNT, "Default blink count must be set.");
+          a.deepEqual(e.getBlinkFrequency(), e.DEFAULT_BLINK_FREQUENCY, "Default blink frequency must be set.");
 
           // set (i.e. change) all available definitions.
           e.setText("foo");
@@ -130,6 +132,8 @@
           e.setFont("foobar");
           e.setAlign("foo-bar");
           e.setVisible(!e.DEFAULT_VISIBLE);
+          e.setBlinkCount(e.DEFAULT_BLINK_COUNT + 1);
+          e.setBlinkFrequency(e.DEFAULT_BLINK_FREQUENCY + 1);
 
           // check that setters work as expected.
           a.deepEqual(e.getText(), "foo", "Text setter must work.");
@@ -137,6 +141,8 @@
           a.deepEqual(e.getFont(), "foobar", "Font setter must work.");
           a.deepEqual(e.getAlign(), "foo-bar", "Align setter must work.");
           a.deepEqual(e.isVisible(), !e.DEFAULT_VISIBLE, "Visibility setter must work.");
+          a.deepEqual(e.getBlinkCount(), e.DEFAULT_BLINK_COUNT+1, "Blink count setter must work.");
+          a.deepEqual(e.getBlinkFrequency(), e.DEFAULT_BLINK_FREQUENCY+1, "Blink frequency setter must work.");
         });
 
         QUnit.test("Check that text entity visiblity works correctly.", function (a) {
@@ -157,7 +163,7 @@
 
         QUnit.test("Check that text entity blinking works correctly.", function (a) {
           var e = new SpaceInvaders.TextEntity(this.game);
-          a.expect((e.BLINK_COUNT * e.BLINK_FREQUENCY) + e.BLINK_FREQUENCY);
+          a.expect((e.DEFAULT_BLINK_COUNT * e.DEFAULT_BLINK_FREQUENCY) + e.DEFAULT_BLINK_FREQUENCY);
 
           // construct a testing context object to calculate the amount of render calls.
           var ctx = { fillText: function (x, y, z) { a.step("The fillText is called."); }}
@@ -171,19 +177,19 @@
           // check that blinking is performed the correct amount of times if visible.
           e.setVisible(true);
           e.blink();
-          for (i = 0; i < e.BLINK_COUNT * e.BLINK_FREQUENCY; i++) {
+          for (i = 0; i < e.DEFAULT_BLINK_COUNT * e.DEFAULT_BLINK_FREQUENCY; i++) {
             e.update(0);
             e.render(ctx);
           }
 
           // check that recalling the blink during blinks will reset blinking state.
           e.blink();
-          for (i = 0; i < e.BLINK_FREQUENCY; i++) {
+          for (i = 0; i < e.DEFAULT_BLINK_FREQUENCY; i++) {
             e.update(0);
             e.render(ctx);
           }
           e.blink();
-          for (i = 0; i < e.BLINK_COUNT * e.BLINK_FREQUENCY; i++) {
+          for (i = 0; i < e.DEFAULT_BLINK_COUNT * e.DEFAULT_BLINK_FREQUENCY; i++) {
             e.update(0);
             e.render(ctx);
           }

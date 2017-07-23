@@ -321,9 +321,9 @@ SpaceInvaders.TextEntity = function (game) {
   /** A constant default visibility state for the text. */
   this.DEFAULT_VISIBLE = true;
   /** A constant amount of toggles to perform after #blink is called. */
-  this.BLINK_COUNT = 20;
+  this.DEFAULT_BLINK_COUNT = 20;
   /** A constant amount of updates (i.e. interval) between the blinking. */
-  this.BLINK_FREQUENCY = 5;
+  this.DEFAULT_BLINK_FREQUENCY = 5;
 
   /** The text to be rendered. */
   var text = this.DEFAULT_TEXT;
@@ -339,19 +339,24 @@ SpaceInvaders.TextEntity = function (game) {
   var blinks = 0;
   /** The blink timer that will perform the blink frequency calculation. */
   var blinkTimer = 0;
+  /** Amount of blinks to be perfomed after #blink is called (-1: infinite).*/
+  var blinkCount = this.DEFAULT_BLINK_COUNT;
+  /** The amount of updates (i.e. interval) between the blinks. */
+  var blinkFrequency = this.DEFAULT_BLINK_FREQUENCY;
 
   /** *************************************************************************
    * Update (i.e. tick) the the logic within the entity.
    * @param {double} dt The delta time from the previous tick operation.
    */
   this.update = function (dt) {
-    if (blinks > 0) {
+    if (blinks > 0 || blinks == -1) {
       blinkTimer--;
       if (blinkTimer == 0) {
         this.setVisible(!this.isVisible());
         blinks--;
-        if (blinks > 0) {
-          blinkTimer = this.BLINK_FREQUENCY;
+        blinks = Math.max(blinks, -1);
+        if (blinks > 0 || blinks == -1) {
+          blinkTimer = blinkFrequency;
         }
       }
     }
@@ -380,22 +385,26 @@ SpaceInvaders.TextEntity = function (game) {
   this.blink = function () {
     if (this.isVisible() || blinks > 0) {
       this.setVisible(true);
-      blinks = this.BLINK_COUNT;
-      blinkTimer = this.BLINK_FREQUENCY;
+      blinks = blinkCount;
+      blinkTimer = blinkFrequency;
     }
   }
 
-  this.getText      = function () { return text;      }
-  this.getFillStyle = function () { return fillStyle; }
-  this.getFont      = function () { return font;      }
-  this.getAlign     = function () { return align;     }
-  this.isVisible    = function () { return visible;   }
+  this.getText            = function () { return text;            }
+  this.getFillStyle       = function () { return fillStyle;       }
+  this.getFont            = function () { return font;            }
+  this.getAlign           = function () { return align;           }
+  this.isVisible          = function () { return visible;         }
+  this.getBlinkCount      = function () { return blinkCount;      }
+  this.getBlinkFrequency  = function () { return blinkFrequency;  }
 
-  this.setText      = function (newText)    { text = newText;       }
-  this.setFillStyle = function (newStyle)   { fillStyle = newStyle; }
-  this.setFont      = function (newFont)    { font = newFont;       }
-  this.setAlign     = function (newAlign)   { align = newAlign;     }
-  this.setVisible   = function (newVisible) { visible = newVisible; }
+  this.setText            = function (newText)    { text = newText;           }
+  this.setFillStyle       = function (newStyle)   { fillStyle = newStyle;     }
+  this.setFont            = function (newFont)    { font = newFont;           }
+  this.setAlign           = function (newAlign)   { align = newAlign;         }
+  this.setVisible         = function (newVisible) { visible = newVisible;     }
+  this.setBlinkCount      = function (newCount)   { blinkCount = newCount;    }
+  this.setBlinkFrequency  = function (newFreq)    { blinkFrequency = newFreq; }
 }
 
 /** ***************************************************************************
@@ -448,6 +457,9 @@ SpaceInvaders.WelcomeState = function (game) {
   singlePlayerText.setAlign("center");
   singlePlayerText.setX(playText.getX());
   singlePlayerText.setY(nameText.getY() + 75);
+  singlePlayerText.setBlinkCount(-1);
+  singlePlayerText.setBlinkFrequency(25);
+  singlePlayerText.blink();
 
   // initialize the multiplayer text.
   multiPlayerText = new SpaceInvaders.TextEntity(game);
@@ -455,6 +467,9 @@ SpaceInvaders.WelcomeState = function (game) {
   multiPlayerText.setAlign("center");
   multiPlayerText.setX(playText.getX());
   multiPlayerText.setY(singlePlayerText.getY() + 50);
+  multiPlayerText.setBlinkCount(-1);
+  multiPlayerText.setBlinkFrequency(25);
+  multiPlayerText.blink();
 
   controlsText = new SpaceInvaders.TextEntity(game);
   controlsText.setText("USE ARROW KEYS AND SPACEBAR TO PLAY");
