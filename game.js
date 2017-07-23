@@ -458,7 +458,7 @@ SpaceInvaders.WelcomeState = function (game) {
   singlePlayerText.setX(playText.getX());
   singlePlayerText.setY(nameText.getY() + 75);
   singlePlayerText.setBlinkCount(-1);
-  singlePlayerText.setBlinkFrequency(25);
+  singlePlayerText.setBlinkFrequency(30);
   singlePlayerText.blink();
 
   // initialize the multiplayer text.
@@ -468,7 +468,7 @@ SpaceInvaders.WelcomeState = function (game) {
   multiPlayerText.setX(playText.getX());
   multiPlayerText.setY(singlePlayerText.getY() + 50);
   multiPlayerText.setBlinkCount(-1);
-  multiPlayerText.setBlinkFrequency(25);
+  multiPlayerText.setBlinkFrequency(30);
   multiPlayerText.blink();
 
   controlsText = new SpaceInvaders.TextEntity(game);
