@@ -827,6 +827,7 @@ SpaceInvaders.IngameState = function (game) {
   this.game = game;
 
   var footerLine;
+  var avatar;
 
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
@@ -838,12 +839,23 @@ SpaceInvaders.IngameState = function (game) {
   footerLine.setClipX(0);
   footerLine.setClipY(117);
 
+  // initialize the green avatar moved by the player.
+  avatar = new SpaceInvaders.SpriteEntity(game);
+  avatar.setImage(game.getSpriteSheet());
+  avatar.setWidth(40);
+  avatar.setHeight(24);
+  avatar.setX(672 / 2 - avatar.getWidth() / 2);
+  avatar.setY(648);
+  avatar.setClipX(85);
+  avatar.setClipY(5);
+
   this.update = function (dt) {
     // ...
   }
 
   this.render = function (ctx) {
     footerLine.render(ctx);
+    avatar.render(ctx);
   }
 
   this.enter = function () {
