@@ -879,7 +879,7 @@ SpaceInvaders.IngameState = function (game) {
 
   // initialize the sprites describing the reserved lives.
   lifeSprites = [];
-  for (i = 0; i < lives; i++) {
+  for (i = 0; i < (lives - 1); i++) {
     var sprite = new SpaceInvaders.SpriteEntity(game);
     sprite.setImage(game.getSpriteSheet());
     sprite.setWidth(40);
