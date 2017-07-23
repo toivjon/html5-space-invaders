@@ -266,7 +266,85 @@ SpaceInvaders.Entity = function (game) {
 
   this.setX = function (newX) { x = newX; }
   this.setY = function (newY) { y = newY; }
-};
+}
+
+/** ***************************************************************************
+ * An entity abstraction for all entities that are collideable.
+ *
+ * This class encapsulates the required definitions for an entity to perform a
+ * collision check with an another entity. The abstraction uses an axis-aligned
+ * bounding box to encapsulate and check whether a collision is executed.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the target game instance.
+ */
+SpaceInvaders.CollideableEntity = function (game) {
+  SpaceInvaders.Entity.call(this, game);
+
+  /** A constant default value for the AABB extent in the x-axis. */
+  this.DEFAULT_EXTENT_X = 0;
+  /** A constant default value for the AABB extent in the y-axis. */
+  this.DEFAULT_EXTENT_Y = 0;
+  /** A constant default value for the enabled state. */
+  this.DEFAULT_ENABLED = true;
+
+  /** The AABB x-axis extent (i.e. half-width). */
+  var extentX = this.DEFAULT_EXTENT_X;
+  /** The AABB y-axis extent (i.e. half-height). */
+  var extentY = this.DEFAULT_EXTENT_Y;
+  /** The x-axis center of the AABB. */
+  var centerX = this.getX() + extentX;
+  /** The y-axis center of the AABB. */
+  var centerY = this.getY() + extentY;
+  /** The definition whether the entity can be collided. */
+  var enabled = this.DEFAULT_ENABLED;
+
+  /** A stored reference to the original parent x-axis setter. */
+  var parentSetX = this.setX;
+  /** A stored reference to the original parent y-axis setter. */
+  var parentSetY = this.setY;
+
+  /****************************************************************************
+   * Check whether this entity collides with an another entity.
+   * @param {SpaceInvades.CollideableEntity} o Another entity to check against.
+   */
+  this.collides = function (o) {
+    // no collision if either entity is currently not collideable.
+    if (!this.isEnabled() || !o.isEnabled()) return false;
+
+    // check whether we have a collisions between the two AABBs.
+    var x = Math.abs(centerX - o.getCenterX()) < (extentX + o.getExtentX());
+    var y = Math.abs(centerY - o.getCenterY()) < (extentY + o.getExtentY());
+    return x && y;
+  }
+
+  this.setX = function (newX) {
+    parentSetX(newX);
+    centerX = this.getX() + extentX;
+  }
+
+  this.setY = function (newY) {
+    parentSetY(newY);
+    centerY = this.getY() + extentY;
+  }
+
+  this.setExtentX = function (newExtent) {
+    extentX = newExtent;
+    centerX = this.getX() + extentX;
+  }
+
+  this.setExtentY = function (newExtent) {
+    extentY = newExtent;
+    centerY = this.getY() + extentY;
+  }
+
+  this.getExtentX = function () { return extentX; }
+  this.getExtentY = function () { return extentY; }
+  this.getCenterX = function () { return centerX; }
+  this.getCenterY = function () { return centerY; }
+  this.isEnabled  = function () { return enabled; }
+
+  this.setEnabled = function (newEnabled) { enabled = newEnabled; }
+}
 
 /** ***************************************************************************
  * A sprite entity for image sprites for the Space Invaders game.
@@ -279,7 +357,7 @@ SpaceInvaders.Entity = function (game) {
  * @param {SpaceInvaders.Game} game A reference to the root game instance.
  */
 SpaceInvaders.SpriteEntity = function (game) {
-  SpaceInvaders.Entity.call(this, game);
+  SpaceInvaders.CollideableEntity.call(this, game);
 
   /** A constant default for the sprite width. */
   this.DEFAULT_WIDTH = 0;
@@ -303,6 +381,11 @@ SpaceInvaders.SpriteEntity = function (game) {
   /** The source image to render sprite from. */
   var image = this.DEFAULT_IMAGE;
 
+  /** Ensure initial parent collideable boundary x-axis. */
+  this.setExtentX(width / 2);
+  /** Ensure initial parent collideable boundary y-axis. */
+  this.setExtentY(height / 2);
+
   this.render = function (ctx) {
     if (image) {
       ctx.drawImage(image,
@@ -317,14 +400,22 @@ SpaceInvaders.SpriteEntity = function (game) {
     }
   }
 
+  this.setWidth = function (newWidth) {
+    width = newWidth;
+    this.setExtentX(width / 2);
+  }
+
+  this.setHeight = function (newHeight) {
+    height = newHeight;
+    this.setExtentY(height / 2)
+  }
+
   this.getWidth   = function () { return width;   }
   this.getHeight  = function () { return height;  }
   this.getClipX   = function () { return clipX;   }
   this.getClipY   = function () { return clipY;   }
   this.getImage   = function () { return image;   }
 
-  this.setWidth   = function (newWidth)   { width = newWidth;   }
-  this.setHeight  = function (newHeight)  { height = newHeight; }
   this.setClipX   = function (newClip)    { clipX = newClip;    }
   this.setClipY   = function (newClip)    { clipY = newClip;    }
   this.setImage   = function (newImage)   { image = newImage;   }

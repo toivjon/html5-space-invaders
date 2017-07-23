@@ -209,18 +209,20 @@
 
           // set (i.e. change) all available definitions.
           var img = new Image();
-          e.setWidth(1);
-          e.setHeight(2);
+          e.setWidth(100);
+          e.setHeight(200);
           e.setClipX(3);
           e.setClipY(4);
           e.setImage(img);
 
           // check that setters work as expected.
-          a.deepEqual(e.getWidth(), 1, "Width setter must work.");
-          a.deepEqual(e.getHeight(), 2, "Height setter must work.");
+          a.deepEqual(e.getWidth(), 100, "Width setter must work.");
+          a.deepEqual(e.getHeight(), 200, "Height setter must work.");
           a.deepEqual(e.getClipX(), 3, "X-axis clip setter must work.");
           a.deepEqual(e.getClipY(), 4, "Y-axis clip setter must work.");
           a.deepEqual(e.getImage(), img, "Image setter must work.");
+          a.deepEqual(e.getExtentX(), 50, "X-axis extent must be automatically updated.");
+          a.deepEqual(e.getExtentY(), 100, "Y-axis extent must be automatically updated.");
         });
 
         QUnit.test("Check that state changing works correctly.", function (a) {
@@ -256,6 +258,35 @@
           // assign the first state back again.
           scene.setState(state1);
           a.deepEqual(scene.getState(), state1, "1. state must be assigned.");
+        });
+
+        QUnit.test("Check that collideable entity construction works.", function (a) {
+          var e = new SpaceInvaders.CollideableEntity(this.game);
+          a.deepEqual(e.getX(), e.DEFAULT_X, "X-axis position must be set.");
+          a.deepEqual(e.getY(), e.DEFAULT_Y, "Y-axis position must be set.");
+          a.deepEqual(e.getExtentX(), e.DEFAULT_EXTENT_X, "X-axis extent must be set.");
+          a.deepEqual(e.getExtentY(), e.DEFAULT_EXTENT_Y, "Y-axis extent must be set.");
+          a.deepEqual(e.isEnabled(), e.DEFAULT_ENABLED, "Enabled state must be set.");
+        });
+
+        QUnit.test("Check that collideable entity setters work.", function (a) {
+          var e = new SpaceInvaders.CollideableEntity(this.game);
+
+          e.setX(100);
+          e.setY(200);
+          e.setExtentX(25);
+          e.setExtentY(50);
+          a.deepEqual(e.getX(), 100, "X-axis position must be set.");
+          a.deepEqual(e.getY(), 200, "Y-axis position must be set.");
+          a.deepEqual(e.getCenterX(), 125, "X-center must be set.");
+          a.deepEqual(e.getCenterY(), 250, "Y-center must be set.");
+
+          e.setX(200);
+          e.setY(300);
+          a.deepEqual(e.getX(), 200, "X-axis position must be set.");
+          a.deepEqual(e.getY(), 300, "Y-axis position must be set.");
+          a.deepEqual(e.getCenterX(), 225, "X-center must be set.");
+          a.deepEqual(e.getCenterY(), 350, "Y-center must be set.");
         });
 
       });
