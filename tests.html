@@ -89,6 +89,7 @@
         QUnit.test("Check game state after calling init.", function (a) {
           a.isTrue(this.game.isInitialized(), "Init state must be true.");
           a.isTrue((this.game.getScene() instanceof SpaceInvaders.Scene), "Scene must be assigned.");
+          a.deepEqual(this.game.getPlayerCount(), 2, "Default player count must be assigned.");
         });
 
         QUnit.test("Check that reinitialization attempts fail.", function (a) {

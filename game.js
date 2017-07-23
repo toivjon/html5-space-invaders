@@ -69,6 +69,9 @@ SpaceInvaders.Game = function () {
   /** The hi-score of the current game instace. */
   var hiScore = 0;
 
+  /** The amount of players. */
+  var playerCount = 2;
+
   /** The sprite sheet containing all image assets for the game. */
   var spriteSheet = undefined;
 
@@ -193,10 +196,12 @@ SpaceInvaders.Game = function () {
   this.getPlayer2Score  = function () { return player2Score;  }
   this.getHiScore       = function () { return hiScore;       }
   this.getSpriteSheet   = function () { return spriteSheet;   }
+  this.getPlayerCount   = function () { return playerCount;   }
 
   this.setPlayer1Score  = function (newScore) { player1Score = newScore;  }
   this.setPlayer2Score  = function (newScore) { player2Score = newScore;  }
   this.setHiScore       = function (newScore) { hiScore = newScore;       }
+  this.setPlayerCount   = function (newCount) { playerCount = newCount;   }
 };
 
 /** ***************************************************************************
@@ -594,9 +599,11 @@ SpaceInvaders.WelcomeState = function (game) {
     var key = event.keyCode ? event.keyCode : event.which;
     switch (key) {
       case game.KEY_1:
+        game.setPlayerCount(1);
         // TODO ...
         break;
       case game.KEY_2:
+        game.setPlayerCount(2);
         // TODO ...
         break;
     }
@@ -704,6 +711,9 @@ SpaceInvaders.Scene = function (game) {
     score1Text.setText(SpaceInvaders.toScoreString(game.getPlayer1Score()));
     score2Text.setText(SpaceInvaders.toScoreString(game.getPlayer2Score()));
     hiScoreText.setText(SpaceInvaders.toScoreString(game.getHiScore()));
+
+    // an ugly way to define whether the second player score should be visible.
+    score2Text.setVisible(this.game.getPlayerCount() == 2);
 
     score1Caption.update(dt);
     hiScoreCaption.update(dt);
