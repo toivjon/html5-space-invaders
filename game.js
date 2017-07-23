@@ -71,9 +71,39 @@ SpaceInvaders.Game = function () {
 
   /** The amount of players. */
   var playerCount = 2;
+  /** The currently active player. */
+  var activePlayer = 1;
 
   /** The sprite sheet containing all image assets for the game. */
   var spriteSheet = undefined;
+
+  /** *************************************************************************
+   * Set the active player for the game.
+   *
+   * When this function is called, the active player will be changed. This
+   * makes the game to show the "PLAY PLAYER<?>" state to notify the next
+   * player to prepare to play the game. This function is typically only used
+   * when playing the game in a multiplayer mode.
+   *
+   * @param {integer} newActivePlayer A number {1|2} based on the target player.
+   */
+  this.setActivePlayer = function (newActivePlayer) {
+    activePlayer = newActivePlayer;
+    if (scene) {
+      if (activePlayer == 1) {
+        // blink and show only score for the 1st player.
+        scene.getScore1Text().setVisible(true);
+        scene.getScore1Text().blink();
+        scene.getScore2Text().setVisible(false);
+      } else if (activePlayer == 2) {
+        // blink and show only score for the 2nd player.
+        scene.getScore2Text().setVisible(true);
+        scene.getScore2Text().blink();
+        scene.getScore1Text().setVisible(false);
+      }
+      scene.setState(new SpaceInvaders.PlayPlayerState(this));
+    }
+  }
 
   /** ***********************************************************************
     * Get the definition whether the game is initialized.
@@ -197,6 +227,7 @@ SpaceInvaders.Game = function () {
   this.getHiScore       = function () { return hiScore;       }
   this.getSpriteSheet   = function () { return spriteSheet;   }
   this.getPlayerCount   = function () { return playerCount;   }
+  this.getActivePlayer  = function () { return activePlayer;  }
 
   this.setPlayer1Score  = function (newScore) { player1Score = newScore;  }
   this.setPlayer2Score  = function (newScore) { player2Score = newScore;  }
@@ -321,7 +352,7 @@ SpaceInvaders.TextEntity = function (game) {
   /** A constant default visibility state for the text. */
   this.DEFAULT_VISIBLE = true;
   /** A constant amount of toggles to perform after #blink is called. */
-  this.DEFAULT_BLINK_COUNT = 20;
+  this.DEFAULT_BLINK_COUNT = 30;
   /** A constant amount of updates (i.e. interval) between the blinking. */
   this.DEFAULT_BLINK_FREQUENCY = 5;
 
@@ -615,13 +646,79 @@ SpaceInvaders.WelcomeState = function (game) {
     switch (key) {
       case game.KEY_1:
         game.setPlayerCount(1);
-        // TODO ...
+        game.setActivePlayer(1);
         break;
       case game.KEY_2:
         game.setPlayerCount(2);
-        // TODO ...
+        game.setActivePlayer(1);
         break;
     }
+  }
+}
+
+/** ***************************************************************************
+ * A starting state to indicate that the player should prepare to play.
+ *
+ * This scene creates a simple "PLAY PLAYER<?>" text for the next player that
+ * should prepare itself to play the game. This is a typical transition between
+ * the players when the multiplayer game mode is being used.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the root game instance.
+ */
+SpaceInvaders.PlayPlayerState = function (game) {
+
+  /** A constant definition of ticks before this state automatically proceeds. */
+  this.VISIBILITY_TICKS = (30 * 5);
+
+  /** A counter of ticks before automatically proceeding to next state. */
+  var tickCounter = this.VISIBILITY_TICKS;
+  /** A text entity to be shown. */
+  var text;
+
+  // initialize the text describing the player to play next.
+  text = new SpaceInvaders.TextEntity(game);
+  text.setText("PLAY PLAYER<" + game.getActivePlayer() + ">");
+  text.setAlign("center");
+  text.setX(672 / 2);
+  text.setY(400);
+
+  /** *************************************************************************
+   * Update (i.e. tick) the the logic within the state.
+   * @param {double} dt The delta time from the previous tick operation.
+   */
+  this.update = function (dt) {
+    tickCounter--;
+    if (tickCounter <= 0) {
+      game.getScene().setState(new SpaceInvaders.WelcomeState(game));
+    }
+  }
+
+  /** *************************************************************************
+   * Render (i.e. draw) the state on the screen.
+   * @param {CanvasRenderingContext2D} ctx The drawing context to use.
+   */
+  this.render = function (ctx) {
+    text.render(ctx);
+  }
+
+  /** *************************************************************************
+   * A function that is called when the state is being entered.
+   *
+   * This function is called before the state is being updated (i.e. ticked)
+   * for a first time. This makes it an ideal place to put all listener logic.
+   */
+  this.enter = function () {
+    // ...
+  }
+
+  /** *************************************************************************
+   * A function that is called when the state is being exited.
+   *
+   * This function is called after the state is being updated (i.e. ticked)
+   * for the last time. This makes it an ideal place to cleanup listeners etc.
+   */
+  this.exit = function () {
+    // ...
   }
 }
 
@@ -727,9 +824,6 @@ SpaceInvaders.Scene = function (game) {
     score2Text.setText(SpaceInvaders.toScoreString(game.getPlayer2Score()));
     hiScoreText.setText(SpaceInvaders.toScoreString(game.getHiScore()));
 
-    // an ugly way to define whether the second player score should be visible.
-    score2Text.setVisible(this.game.getPlayerCount() == 2);
-
     score1Caption.update(dt);
     hiScoreCaption.update(dt);
     score2Caption.update(dt);
@@ -757,5 +851,8 @@ SpaceInvaders.Scene = function (game) {
     state.render(ctx);
   }
 
-  this.getState = function () { return state; }
+
+  this.getState         = function () { return state;         }
+  this.getScore1Text    = function () { return score1Text;    }
+  this.getScore2Text    = function () { return score2Text;    }
 }
