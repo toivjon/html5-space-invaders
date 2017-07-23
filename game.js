@@ -49,6 +49,9 @@ SpaceInvaders.Game = function () {
   /** A constant for the number two keycode. */
   this.KEY_2 = 50;
 
+  /** A constant count definition of initial lives. */
+  this.INITIAL_LIVE_COUNT = 3;
+
   /** A definition whether the game is initialized or not. */
   var initialized = false;
   /** A reference to the HTML5 canvas used as the rendering target. */
@@ -73,6 +76,11 @@ SpaceInvaders.Game = function () {
   var playerCount = 2;
   /** The currently active player. */
   var activePlayer = 1;
+
+  /** The current count of lives of the 1st player. */
+  var player1Lives = this.INITIAL_LIVE_COUNT;
+  /** The current count of lives of the 2nd player. */
+  var player2Lives = this.INITIAL_LIVE_COUNT;
 
   /** The sprite sheet containing all image assets for the game. */
   var spriteSheet = undefined;
@@ -228,11 +236,15 @@ SpaceInvaders.Game = function () {
   this.getSpriteSheet   = function () { return spriteSheet;   }
   this.getPlayerCount   = function () { return playerCount;   }
   this.getActivePlayer  = function () { return activePlayer;  }
+  this.getPlayer1Lives  = function () { return player1Lives;  }
+  this.getPlayer2Lives  = function () { return player2Lives;  }
 
   this.setPlayer1Score  = function (newScore) { player1Score = newScore;  }
   this.setPlayer2Score  = function (newScore) { player2Score = newScore;  }
   this.setHiScore       = function (newScore) { hiScore = newScore;       }
   this.setPlayerCount   = function (newCount) { playerCount = newCount;   }
+  this.setPlayer1Lives  = function (newLives) { player1Lives = newLives;  }
+  this.setPlayer2Lives  = function (newLives) { player2Lives = newLives;  }
 };
 
 /** ***************************************************************************
@@ -828,6 +840,8 @@ SpaceInvaders.IngameState = function (game) {
 
   var footerLine;
   var avatar;
+  var lifesText;
+  var lifesSprites;
 
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
@@ -849,6 +863,34 @@ SpaceInvaders.IngameState = function (game) {
   avatar.setClipX(85);
   avatar.setClipY(5);
 
+  // get the amoun of lives for the current player.
+  var lives = 0;
+  if (game.getActivePlayer() == 1) {
+    lives = game.getPlayer1Lives();
+  } else {
+    lives = game.getPlayer2Lives();
+  }
+
+  // initialize the text indicating the amount lifes.
+  lifesText = new SpaceInvaders.TextEntity(game);
+  lifesText.setText(lives.toString());
+  lifesText.setX(27);
+  lifesText.setY(743);
+
+  // initialize the sprites describing the reserved lives.
+  lifeSprites = [];
+  for (i = 0; i < lives; i++) {
+    var sprite = new SpaceInvaders.SpriteEntity(game);
+    sprite.setImage(game.getSpriteSheet());
+    sprite.setWidth(40);
+    sprite.setHeight(24);
+    sprite.setX(66 + i * 49);
+    sprite.setY(720);
+    sprite.setClipX(85);
+    sprite.setClipY(5);
+    lifeSprites.push(sprite);
+  }
+
   this.update = function (dt) {
     // ...
   }
@@ -856,6 +898,10 @@ SpaceInvaders.IngameState = function (game) {
   this.render = function (ctx) {
     footerLine.render(ctx);
     avatar.render(ctx);
+    lifesText.render(ctx);
+    for (i = 0; i < lifeSprites.length; i++) {
+      lifeSprites[i].render(ctx);
+    }
   }
 
   this.enter = function () {

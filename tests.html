@@ -90,6 +90,8 @@
           a.isTrue(this.game.isInitialized(), "Init state must be true.");
           a.isTrue((this.game.getScene() instanceof SpaceInvaders.Scene), "Scene must be assigned.");
           a.deepEqual(this.game.getPlayerCount(), 2, "Default player count must be assigned.");
+          a.deepEqual(this.game.getPlayer1Lives(), this.game.INITIAL_LIVE_COUNT, "Default lives must be assigned.");
+          a.deepEqual(this.game.getPlayer2Lives(), this.game.INITIAL_LIVE_COUNT, "Default lives must be assigned.");
         });
 
         QUnit.test("Check that reinitialization attempts fail.", function (a) {
