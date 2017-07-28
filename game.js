@@ -48,6 +48,12 @@ SpaceInvaders.Game = function () {
   this.KEY_1 = 49;
   /** A constant for the number two keycode. */
   this.KEY_2 = 50;
+  /** A constant for the right-arrow keycode. */
+  this.KEY_RIGHT = 39;
+  /** A constant for the left-arrow keycode. */
+  this.KEY_LEFT = 37;
+  /** A constant for the spacebar keycode. */
+  this.KEY_SPACEBAR = 32;
 
   /** A constant count definition of initial lives. */
   this.INITIAL_LIVE_COUNT = 3;
