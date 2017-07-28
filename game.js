@@ -236,21 +236,21 @@ SpaceInvaders.Game = function () {
     }
   };
 
-  this.getPlayer1Score  = function () { return player1Score;  }
-  this.getPlayer2Score  = function () { return player2Score;  }
-  this.getHiScore       = function () { return hiScore;       }
-  this.getSpriteSheet   = function () { return spriteSheet;   }
-  this.getPlayerCount   = function () { return playerCount;   }
-  this.getActivePlayer  = function () { return activePlayer;  }
-  this.getPlayer1Lives  = function () { return player1Lives;  }
-  this.getPlayer2Lives  = function () { return player2Lives;  }
+  this.getPlayer1Score = function () { return player1Score; }
+  this.getPlayer2Score = function () { return player2Score; }
+  this.getHiScore = function () { return hiScore; }
+  this.getSpriteSheet = function () { return spriteSheet; }
+  this.getPlayerCount = function () { return playerCount; }
+  this.getActivePlayer = function () { return activePlayer; }
+  this.getPlayer1Lives = function () { return player1Lives; }
+  this.getPlayer2Lives = function () { return player2Lives; }
 
-  this.setPlayer1Score  = function (newScore) { player1Score = newScore;  }
-  this.setPlayer2Score  = function (newScore) { player2Score = newScore;  }
-  this.setHiScore       = function (newScore) { hiScore = newScore;       }
-  this.setPlayerCount   = function (newCount) { playerCount = newCount;   }
-  this.setPlayer1Lives  = function (newLives) { player1Lives = newLives;  }
-  this.setPlayer2Lives  = function (newLives) { player2Lives = newLives;  }
+  this.setPlayer1Score = function (newScore) { player1Score = newScore; }
+  this.setPlayer2Score = function (newScore) { player2Score = newScore; }
+  this.setHiScore = function (newScore) { hiScore = newScore; }
+  this.setPlayerCount = function (newCount) { playerCount = newCount; }
+  this.setPlayer1Lives = function (newLives) { player1Lives = newLives; }
+  this.setPlayer2Lives = function (newLives) { player2Lives = newLives; }
 };
 
 /** ***************************************************************************
@@ -359,7 +359,7 @@ SpaceInvaders.CollideableEntity = function (game) {
   this.getExtentY = function () { return extentY; }
   this.getCenterX = function () { return centerX; }
   this.getCenterY = function () { return centerY; }
-  this.isEnabled  = function () { return enabled; }
+  this.isEnabled = function () { return enabled; }
 
   this.setEnabled = function (newEnabled) { enabled = newEnabled; }
 }
@@ -428,15 +428,15 @@ SpaceInvaders.SpriteEntity = function (game) {
     this.setExtentY(height / 2)
   }
 
-  this.getWidth   = function () { return width;   }
-  this.getHeight  = function () { return height;  }
-  this.getClipX   = function () { return clipX;   }
-  this.getClipY   = function () { return clipY;   }
-  this.getImage   = function () { return image;   }
+  this.getWidth = function () { return width; }
+  this.getHeight = function () { return height; }
+  this.getClipX = function () { return clipX; }
+  this.getClipY = function () { return clipY; }
+  this.getImage = function () { return image; }
 
-  this.setClipX   = function (newClip)    { clipX = newClip;    }
-  this.setClipY   = function (newClip)    { clipY = newClip;    }
-  this.setImage   = function (newImage)   { image = newImage;   }
+  this.setClipX = function (newClip) { clipX = newClip; }
+  this.setClipY = function (newClip) { clipY = newClip; }
+  this.setImage = function (newImage) { image = newImage; }
 }
 
 /** ***************************************************************************
@@ -494,14 +494,14 @@ SpaceInvaders.MovableSpriteEntity = function (game) {
     stepCounter = stepSize;
   }
 
-  this.getVelocity    = function () { return velocity;    }
-  this.getDirectionX  = function () { return directionX;  }
-  this.getDirectionY  = function () { return directionY;  }
-  this.getStepSize    = function () { return stepSize;    }
+  this.getVelocity = function () { return velocity; }
+  this.getDirectionX = function () { return directionX; }
+  this.getDirectionY = function () { return directionY; }
+  this.getStepSize = function () { return stepSize; }
 
-  this.setVelocity    = function (newVelocity)  { velocity = newVelocity;     }
-  this.setDirectionX  = function (newDirection) { directionX = newDirection;  }
-  this.setDirectionY  = function (newDirection) { directionY = newDirection;  }
+  this.setVelocity = function (newVelocity) { velocity = newVelocity; }
+  this.setDirectionX = function (newDirection) { directionX = newDirection; }
+  this.setDirectionY = function (newDirection) { directionY = newDirection; }
 }
 
 /** ***************************************************************************
@@ -595,21 +595,21 @@ SpaceInvaders.TextEntity = function (game) {
     }
   }
 
-  this.getText            = function () { return text;            }
-  this.getFillStyle       = function () { return fillStyle;       }
-  this.getFont            = function () { return font;            }
-  this.getAlign           = function () { return align;           }
-  this.isVisible          = function () { return visible;         }
-  this.getBlinkCount      = function () { return blinkCount;      }
-  this.getBlinkFrequency  = function () { return blinkFrequency;  }
+  this.getText = function () { return text; }
+  this.getFillStyle = function () { return fillStyle; }
+  this.getFont = function () { return font; }
+  this.getAlign = function () { return align; }
+  this.isVisible = function () { return visible; }
+  this.getBlinkCount = function () { return blinkCount; }
+  this.getBlinkFrequency = function () { return blinkFrequency; }
 
-  this.setText            = function (newText)    { text = newText;           }
-  this.setFillStyle       = function (newStyle)   { fillStyle = newStyle;     }
-  this.setFont            = function (newFont)    { font = newFont;           }
-  this.setAlign           = function (newAlign)   { align = newAlign;         }
-  this.setVisible         = function (newVisible) { visible = newVisible;     }
-  this.setBlinkCount      = function (newCount)   { blinkCount = newCount;    }
-  this.setBlinkFrequency  = function (newFreq)    { blinkFrequency = newFreq; }
+  this.setText = function (newText) { text = newText; }
+  this.setFillStyle = function (newStyle) { fillStyle = newStyle; }
+  this.setFont = function (newFont) { font = newFont; }
+  this.setAlign = function (newAlign) { align = newAlign; }
+  this.setVisible = function (newVisible) { visible = newVisible; }
+  this.setBlinkCount = function (newCount) { blinkCount = newCount; }
+  this.setBlinkFrequency = function (newFreq) { blinkFrequency = newFreq; }
 }
 
 /** ***************************************************************************
@@ -933,6 +933,7 @@ SpaceInvaders.IngameState = function (game) {
   avatar.setY(648);
   avatar.setClipX(85);
   avatar.setClipY(5);
+  avatar.setVelocity(0.25);
 
   // get the amount of lives for the current player.
   var lives = 0;
@@ -975,12 +976,65 @@ SpaceInvaders.IngameState = function (game) {
     }
   }
 
+  /** *************************************************************************
+   * A function that is called when the state is being entered.
+   *
+   * This function is called before the state is being updated (i.e. ticked)
+   * for a first time. This makes it an ideal place to put all listener logic.
+   */
   this.enter = function () {
-    // ...
+    document.addEventListener("keyup", this.keyUp);
+    document.addEventListener("keydown", this.keyDown);
   }
 
+  /** *************************************************************************
+   * A function that is called when the state is being exited.
+   *
+   * This function is called after the state is being updated (i.e. ticked)
+   * for the last time. This makes it an ideal place to cleanup listeners etc.
+   */
   this.exit = function () {
-    // ...
+    document.removeEventListener("keyup", this.keyUp);
+    document.removeEventListener("keydown", this.keyDown);
+  }
+
+  /** *************************************************************************
+   * A key listener function called when the user releases a key press.
+   * @param {KeyboardEvent} e The keyboard event received from the DOM.
+   */
+  this.keyUp = function (e) {
+    var key = event.keyCode ? event.keyCode : event.which;
+    switch (key) {
+      case game.KEY_LEFT:
+        if (avatar.getDirectionX() == -1) {
+          avatar.setDirectionX(0);
+        }
+        break;
+      case game.KEY_RIGHT:
+        if (avatar.getDirectionX() == 1) {
+          avatar.setDirectionX(0);
+        }
+        break;
+      case game.KEY_SPACEBAR:
+        // TODO make the avatar to fire a laser.
+        break;
+    }
+  }
+
+  /** *************************************************************************
+   * A key listener function called when the user releases a key press.
+   * @param {KeyboardEvent} e The keyboard event received from the DOM.
+   */
+  this.keyDown = function (e) {
+    var key = event.keyCode ? event.keyCode : event.which;
+    switch (key) {
+      case game.KEY_LEFT:
+        avatar.setDirectionX(-1);
+        break;
+      case game.KEY_RIGHT:
+        avatar.setDirectionX(1);
+        break;
+    }
   }
 
 }
@@ -1115,7 +1169,7 @@ SpaceInvaders.Scene = function (game) {
   }
 
 
-  this.getState         = function () { return state;         }
-  this.getScore1Text    = function () { return score1Text;    }
-  this.getScore2Text    = function () { return score2Text;    }
+  this.getState = function () { return state; }
+  this.getScore1Text = function () { return score1Text; }
+  this.getScore2Text = function () { return score2Text; }
 }
