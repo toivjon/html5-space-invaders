@@ -291,6 +291,96 @@
           a.deepEqual(e.getCenterY(), 350, "Y-center must be set.");
         });
 
+        QUnit.test("Check that movable sprite entity construction works.", function (a) {
+          var e = new SpaceInvaders.MovableSpriteEntity(this.game);
+          a.deepEqual(e.getX(), e.DEFAULT_X, "X-axis position must be set.");
+          a.deepEqual(e.getY(), e.DEFAULT_Y, "Y-axis position must be set.");
+          a.deepEqual(e.getExtentX(), e.DEFAULT_EXTENT_X, "X-axis extent must be set.");
+          a.deepEqual(e.getExtentY(), e.DEFAULT_EXTENT_Y, "Y-axis extent must be set.");
+          a.deepEqual(e.isEnabled(), e.DEFAULT_ENABLED, "Enabled state must be set.");
+        });
+
+        QUnit.test("Check that movable entity setters work.", function (a) {
+          var e = new SpaceInvaders.MovableSpriteEntity(this.game);
+
+          e.setVelocity(313);
+          e.setDirectionX(1);
+          e.setDirectionY(2);
+          e.setStepSize(10);
+
+          a.deepEqual(e.getVelocity(), 313, "Velocity must be set.");
+          a.deepEqual(e.getDirectionX(), 1, "X-axis direction must be set.");
+          a.deepEqual(e.getDirectionY(), 2, "Y-axis direction must be set.");
+          a.deepEqual(e.getStepSize(), 10, "Stepsize must be set.");
+        });
+
+        QUnit.test("Check that movable entity can steplessly move the entity.", function (a) {
+          var e = new SpaceInvaders.MovableSpriteEntity(this.game);
+          e.setX(100);
+          e.setY(200);
+          a.deepEqual(e.getX(), 100, "X-axis position must be set.");
+          a.deepEqual(e.getY(), 200, "Y-axis position must be set.");
+
+          // apply some velocity and movement direction.
+          e.setDirectionX(-1);
+          e.setDirectionY(1);
+          e.setVelocity(2);
+
+          // check that the update function is capable to move the entity.
+          e.update(10);
+          a.deepEqual(e.getX(), 100 + (-1 * 2 * 10), "Entity must be now moved in the x-axis.");
+          a.deepEqual(e.getY(), 200 + (2 * 10), "Entity must be now moved in the y-axis.");
+
+          // check that the update function does move the entity when called again.
+          var oldX = e.getX();
+          var oldY = e.getY();
+          e.update(5);
+          a.deepEqual(e.getX(), oldX + (-1 * 2 * 5), "Entity must be now moved in the x-axis.");
+          a.deepEqual(e.getY(), oldY + (2 * 5), "Entity must be now moved in the y-axis.");
+        });
+
+        QUnit.test("Check that movable entity can move the entity in steps.", function (a) {
+          var e = new SpaceInvaders.MovableSpriteEntity(this.game);
+          e.setX(100);
+          e.setY(200);
+          a.deepEqual(e.getX(), 100, "X-axis position must be set.");
+          a.deepEqual(e.getY(), 200, "Y-axis position must be set.");
+
+          // apply some velocity, movement direction and a step size.
+          e.setDirectionX(-1);
+          e.setDirectionY(1);
+          e.setVelocity(2);
+          e.setStepSize(5);
+
+          // check that updates before the step do not move the entity.
+          e.update(10);
+          e.update(10);
+          e.update(10);
+          e.update(10);
+          a.deepEqual(e.getX(), 100, "X-axis position must not be moved yet.");
+          a.deepEqual(e.getY(), 200, "Y-axis position must not be moved yet.");
+
+          // check that the fifth update does actually move the entity.
+          e.update(10);
+          a.deepEqual(e.getX(), 100 + (-1 * 2 * 10), "Entity must be now moved in the x-axis.");
+          a.deepEqual(e.getY(), 200 + (2 * 10), "Entity must be now moved in the y-axis.");
+
+          // check that next five updates before the step do not move the entity.
+          var oldX = e.getX();
+          var oldY = e.getY();
+          e.update(10);
+          e.update(10);
+          e.update(10);
+          e.update(10);
+          a.deepEqual(e.getX(), oldX, "X-axis position must not be moved yet.");
+          a.deepEqual(e.getY(), oldY, "Y-axis position must not be moved yet.");
+
+          // check that fifth update does again move the entity.
+          e.update(5);
+          a.deepEqual(e.getX(), oldX + (-1 * 2 * 5), "Entity must be now moved in the x-axis.");
+          a.deepEqual(e.getY(), oldY + (2 * 5), "Entity must be now moved in the y-axis.");
+        });
+
       });
     });
     // ========================================================================

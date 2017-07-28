@@ -434,6 +434,71 @@ SpaceInvaders.SpriteEntity = function (game) {
 }
 
 /** ***************************************************************************
+ * An abstraction of all entities that are movable and have a sprite image.
+ *
+ * This class encapsulates the all necessary functionality for all entities for
+ * collideable, movable and drawable sprite entities. For example the player
+ * avatar and all enemies should be constructed from this structure.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the target game instance.
+ */
+SpaceInvaders.MovableSpriteEntity = function (game) {
+  SpaceInvaders.SpriteEntity.call(this, game);
+
+  /** A constant default for the velocity of the movement. */
+  this.DEFAULT_VELOCITY = 0.0;
+  /** A constant default x-axis direction of the movement. */
+  this.DEFAULT_DIRECTION_X = 0.0;
+  /** A constant default y-axis direction of the movement. */
+  this.DEFAULT_DIRECTION_Y = 0.0;
+  /** A constant default step size for the movement. */
+  this.DEFAULT_STEP_SIZE = 0;
+
+  /** The velocity of the entity. */
+  var velocity = this.DEFAULT_VELOCITY;
+  /** The x-axis direction. */
+  var directionX = this.DEFAULT_DIRECTION_X;
+  /** The y-axis direction. */
+  var directionY = this.DEFAULT_DIRECTION_Y;
+
+  /** The size of the movement step (i.e. updates before movement is applied). */
+  var stepSize = 0;
+  /** The step counter to track when to perform a movement step. */
+  var stepCounter = 0;
+
+  /** *************************************************************************
+   * Update (i.e. tick) the the logic within the entity.
+   * @param {number} dt The delta time from the previous tick operation.
+   */
+  this.update = function (dt) {
+    stepCounter = Math.max(0, stepCounter - 1);
+    if (stepCounter <= 0) {
+      this.setX(this.getX() + directionX * velocity * dt);
+      this.setY(this.getY() + directionY * velocity * dt);
+      stepCounter = stepSize;
+    }
+  }
+
+  /** *************************************************************************
+   * Apply the given step size and clear the current step counter of the entity.
+   * @param {number} newStepSize A new step size for the movable entity.
+   */
+  this.setStepSize = function (newStepSize) {
+    stepSize = newStepSize;
+    stepCounter = stepSize;
+  }
+
+  this.getVelocity    = function () { return velocity;    }
+  this.getDirectionX  = function () { return directionX;  }
+  this.getDirectionY  = function () { return directionY;  }
+  this.getStepSize    = function () { return stepSize;    }
+
+  this.setVelocity    = function (newVelocity)  { velocity = newVelocity;     }
+  this.setDirectionX  = function (newDirection) { directionX = newDirection;  }
+  this.setDirectionY  = function (newDirection) { directionY = newDirection;  }
+}
+
+/** ***************************************************************************
  * A textual entity for all texts used in the Space Invaders game.
  *
  * This class presents a textual entity within the game scene. It does really
@@ -854,7 +919,7 @@ SpaceInvaders.IngameState = function (game) {
   footerLine.setClipY(117);
 
   // initialize the green avatar moved by the player.
-  avatar = new SpaceInvaders.SpriteEntity(game);
+  avatar = new SpaceInvaders.MovableSpriteEntity(game);
   avatar.setImage(game.getSpriteSheet());
   avatar.setWidth(40);
   avatar.setHeight(24);
@@ -863,7 +928,7 @@ SpaceInvaders.IngameState = function (game) {
   avatar.setClipX(85);
   avatar.setClipY(5);
 
-  // get the amoun of lives for the current player.
+  // get the amount of lives for the current player.
   var lives = 0;
   if (game.getActivePlayer() == 1) {
     lives = game.getPlayer1Lives();
@@ -892,7 +957,7 @@ SpaceInvaders.IngameState = function (game) {
   }
 
   this.update = function (dt) {
-    // ...
+    avatar.update(dt);
   }
 
   this.render = function (ctx) {
