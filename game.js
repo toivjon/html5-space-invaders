@@ -387,6 +387,8 @@ SpaceInvaders.SpriteEntity = function (game) {
   this.DEFAULT_CLIP_Y = 0;
   /** A constant default for the sprite image. */
   this.DEFAULT_IMAGE = undefined;
+  /** A constant default for the sprite visibility. */
+  this.DEFAULT_VISIBLE = true;
 
   /** The width of the sprite. */
   var width = this.DEFAULT_WIDTH;
@@ -398,6 +400,8 @@ SpaceInvaders.SpriteEntity = function (game) {
   var clipY = this.DEFAULT_CLIP_Y;
   /** The source image to render sprite from. */
   var image = this.DEFAULT_IMAGE;
+  /** The definition whether the sprite is visible. */
+  var visible = this.DEFAULT_VISIBLE;
 
   /** Ensure initial parent collideable boundary x-axis. */
   this.setExtentX(width / 2);
@@ -405,7 +409,7 @@ SpaceInvaders.SpriteEntity = function (game) {
   this.setExtentY(height / 2);
 
   this.render = function (ctx) {
-    if (image) {
+    if (image && this.isVisible()) {
       ctx.drawImage(image,
         this.getClipX(),
         this.getClipY(),
@@ -433,10 +437,12 @@ SpaceInvaders.SpriteEntity = function (game) {
   this.getClipX = function () { return clipX; }
   this.getClipY = function () { return clipY; }
   this.getImage = function () { return image; }
+  this.isVisible = function () { return visible; }
 
   this.setClipX = function (newClip) { clipX = newClip; }
   this.setClipY = function (newClip) { clipY = newClip; }
   this.setImage = function (newImage) { image = newImage; }
+  this.setVisible = function (newVisible) { visible = newVisible; }
 }
 
 /** ***************************************************************************
@@ -911,11 +917,13 @@ SpaceInvaders.IngameState = function (game) {
 
   var footerLine;
   var avatar;
+  var avatarLaser;
   var lifesText;
   var lifesSprites;
 
   var leftOutOfBoundsDetector;
   var rightOutOfBoundsDetector;
+  var topOutOfBoundsDetector;
 
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
@@ -937,6 +945,21 @@ SpaceInvaders.IngameState = function (game) {
   avatar.setClipX(86);
   avatar.setClipY(5);
   avatar.setVelocity(0.25);
+
+  // initialize a single laser for the avatar.
+  // we can reuse the same laser instance for the avatar.
+  avatarLaser = new SpaceInvaders.MovableSpriteEntity(game);
+  avatarLaser.setImage(game.getSpriteSheet());
+  avatarLaser.setWidth(6);
+  avatarLaser.setHeight(9);
+  avatarLaser.setX(0);
+  avatarLaser.setY(0);
+  avatarLaser.setClipX(80);
+  avatarLaser.setClipY(36);
+  avatarLaser.setVelocity(0.75);
+  avatarLaser.setDirectionY(-1);
+  avatarLaser.setVisible(false);
+  avatarLaser.setEnabled(false);
 
   // get the amount of lives for the current player.
   var lives = 0;
@@ -980,8 +1003,18 @@ SpaceInvaders.IngameState = function (game) {
   rightOutOfBoundsDetector.setExtentX(50);
   rightOutOfBoundsDetector.setExtentY(768 / 2);
 
+  // initialize an out-of-bounds detector at the top of the scene.
+  topOutOfBoundsDetector = new SpaceInvaders.CollideableEntity(game);
+  topOutOfBoundsDetector.setX(0);
+  topOutOfBoundsDetector.setY(0);
+  topOutOfBoundsDetector.setExtentX(768 / 2);
+  topOutOfBoundsDetector.setExtentY(45);
+
   this.update = function (dt) {
     avatar.update(dt);
+    if (avatarLaser.isVisible()) {
+      avatarLaser.update(dt);
+    }
 
     // check that the avatar cannot go out-of-bounds from the either side of the scene.
     if (avatar.getDirectionX() == -1) {
@@ -995,11 +1028,20 @@ SpaceInvaders.IngameState = function (game) {
         avatar.setX(rightOutOfBoundsDetector.getX() - avatar.getWidth());
       }
     }
+
+    // check whether the laser shot by the avatar hits something.
+    if (avatarLaser.isVisible()) {
+      if (avatarLaser.collides(topOutOfBoundsDetector)) {
+        avatarLaser.setVisible(false);
+        avatarLaser.setEnabled(false);
+      }
+    }
   }
 
   this.render = function (ctx) {
     footerLine.render(ctx);
     avatar.render(ctx);
+    avatarLaser.render(ctx);
     lifesText.render(ctx);
     for (i = 0; i < lifeSprites.length; i++) {
       lifeSprites[i].render(ctx);
@@ -1046,7 +1088,12 @@ SpaceInvaders.IngameState = function (game) {
         }
         break;
       case game.KEY_SPACEBAR:
-        // TODO make the avatar to fire a laser.
+        if (avatarLaser.isVisible() == false) {
+          avatarLaser.setVisible(true);
+          avatarLaser.setEnabled(true);
+          avatarLaser.setX(avatar.getCenterX() - avatarLaser.getExtentX());
+          avatarLaser.setY(avatar.getY());
+        }
         break;
     }
   }

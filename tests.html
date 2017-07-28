@@ -208,6 +208,7 @@
           a.deepEqual(e.getClipX(), e.DEFAULT_CLIP_X, "Default x-axis clip must be set.");
           a.deepEqual(e.getClipY(), e.DEFAULT_CLIP_Y, "Default y-axis clip must be set.");
           a.deepEqual(e.getImage(), e.DEFAULT_IMAGE, "Default image definition must be set.");
+          a.deepEqual(e.isVisible(), e.DEFAULT_VISIBLE, "Default visibility must be set.");
 
           // set (i.e. change) all available definitions.
           var img = new Image();
@@ -216,6 +217,7 @@
           e.setClipX(3);
           e.setClipY(4);
           e.setImage(img);
+          e.setVisible(!e.DEFAULT_VISIBLE);
 
           // check that setters work as expected.
           a.deepEqual(e.getWidth(), 100, "Width setter must work.");
@@ -225,6 +227,7 @@
           a.deepEqual(e.getImage(), img, "Image setter must work.");
           a.deepEqual(e.getExtentX(), 50, "X-axis extent must be automatically updated.");
           a.deepEqual(e.getExtentY(), 100, "Y-axis extent must be automatically updated.");
+          a.deepEqual(e.isVisible(), !e.DEFAULT_VISIBLE, "Visibility setter must work.");
         });
 
         QUnit.test("Check that state changing works correctly.", function (a) {
