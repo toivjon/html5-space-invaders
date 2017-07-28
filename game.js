@@ -914,6 +914,9 @@ SpaceInvaders.IngameState = function (game) {
   var lifesText;
   var lifesSprites;
 
+  var leftOutOfBoundsDetector;
+  var rightOutOfBoundsDetector;
+
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
   footerLine.setImage(game.getSpriteSheet());
@@ -931,7 +934,7 @@ SpaceInvaders.IngameState = function (game) {
   avatar.setHeight(24);
   avatar.setX(672 / 2 - avatar.getWidth() / 2);
   avatar.setY(648);
-  avatar.setClipX(85);
+  avatar.setClipX(86);
   avatar.setClipY(5);
   avatar.setVelocity(0.25);
 
@@ -963,8 +966,35 @@ SpaceInvaders.IngameState = function (game) {
     lifeSprites.push(sprite);
   }
 
+  // initialize an out-of-bounds detector at the left side of the scene.
+  leftOutOfBoundsDetector = new SpaceInvaders.CollideableEntity(game);
+  leftOutOfBoundsDetector.setX(-100);
+  leftOutOfBoundsDetector.setY(0);
+  leftOutOfBoundsDetector.setExtentX(50);
+  leftOutOfBoundsDetector.setExtentY(768 / 2);
+
+  // initialize an out-of-bounds detector at the right side of the scene.
+  rightOutOfBoundsDetector = new SpaceInvaders.CollideableEntity(game);
+  rightOutOfBoundsDetector.setX(672);
+  rightOutOfBoundsDetector.setY(0);
+  rightOutOfBoundsDetector.setExtentX(50);
+  rightOutOfBoundsDetector.setExtentY(768 / 2);
+
   this.update = function (dt) {
     avatar.update(dt);
+
+    // check that the avatar cannot go out-of-bounds from the either side of the scene.
+    if (avatar.getDirectionX() == -1) {
+      if (leftOutOfBoundsDetector.collides(avatar)) {
+        avatar.setDirectionX(0);
+        avatar.setX(leftOutOfBoundsDetector.getX() + 2 * leftOutOfBoundsDetector.getExtentX());
+      }
+    } else if (avatar.getDirectionX() == 1) {
+      if (rightOutOfBoundsDetector.collides(avatar)) {
+        avatar.setDirectionX(0);
+        avatar.setX(rightOutOfBoundsDetector.getX() - avatar.getWidth());
+      }
+    }
   }
 
   this.render = function (ctx) {
