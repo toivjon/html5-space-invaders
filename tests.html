@@ -344,6 +344,35 @@
           a.deepEqual(e.getY(), oldY + (2 * 5), "Entity must be now moved in the y-axis.");
         });
 
+        QUnit.test("Check that movable entity automatic disappearing works.", function (a) {
+          var e = new SpaceInvaders.MovableSpriteEntity(this.game);
+          a.isTrue(e.isVisible(), "Movable sprite must be initially visible.");
+          a.isTrue(e.isEnabled(), "Movable sprite must be initially enabled.");
+
+          // define entity to disappear after 3 updates.
+          e.setDisappearCountdown(3);
+
+          // check what happens after the first update.
+          e.update();
+          a.isTrue(e.isVisible(), "Movable sprite must still be visible.");
+          a.isTrue(e.isEnabled(), "Movable sprite must still be enabled.");
+
+          // check what happens after the second update.
+          e.update();
+          a.isTrue(e.isVisible(), "Movable sprite must still be visible.");
+          a.isTrue(e.isEnabled(), "Movable sprite must still be enabled.");
+
+          // check what happens after the third update.
+          e.update();
+          a.isFalse(e.isVisible(), "Movable sprite must be hidden.");
+          a.isFalse(e.isEnabled(), "Movable sprite must be disabled.");
+
+          // check what happens after the fourth update.
+          e.update();
+          a.isFalse(e.isVisible(), "Movable sprite stay hidden.");
+          a.isFalse(e.isEnabled(), "Movable sprite stay disabled.");
+        });
+
         QUnit.test("Check that movable entity can move the entity in steps.", function (a) {
           var e = new SpaceInvaders.MovableSpriteEntity(this.game);
           e.setX(100);

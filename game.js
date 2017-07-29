@@ -478,11 +478,21 @@ SpaceInvaders.MovableSpriteEntity = function (game) {
   /** The step counter to track when to perform a movement step. */
   var stepCounter = 0;
 
+  /** The step counter to track when to perform an automatic disappear. */
+  var disappearCountdown = 0;
+
   /** *************************************************************************
    * Update (i.e. tick) the the logic within the entity.
    * @param {number} dt The delta time from the previous tick operation.
    */
   this.update = function (dt) {
+    if (disappearCountdown > 0) {
+      disappearCountdown--;
+      if (disappearCountdown <= 0) {
+        this.setEnabled(false);
+        this.setVisible(false);
+      }
+    }
     stepCounter = Math.max(0, stepCounter - 1);
     if (stepCounter <= 0) {
       this.setX(this.getX() + directionX * velocity * dt);
@@ -498,6 +508,14 @@ SpaceInvaders.MovableSpriteEntity = function (game) {
   this.setStepSize = function (newStepSize) {
     stepSize = newStepSize;
     stepCounter = stepSize;
+  }
+
+  /** *************************************************************************
+   * Apply the given amount of ticks to perform before automatically disappear.
+   * @param {number} countdown The amount of ticks before disappearing.
+   */
+  this.setDisappearCountdown = function (countdown) {
+    disappearCountdown = Math.max(0, countdown);
   }
 
   this.getVelocity = function () { return velocity; }
@@ -1131,12 +1149,9 @@ SpaceInvaders.IngameState = function (game) {
       if (avatarLaser.collides(topOutOfBoundsDetector)) {
         // stop the laser and change the image into the splash explosion image.
         avatarLaser.setDirectionY(0);
-        avatarLaser.setAnimationFrameIndex(2);
+        avatarLaser.setAnimationFrameIndex(1);
         avatarLaser.setY(topOutOfBoundsDetector.getY() + topOutOfBoundsDetector.getExtentY() * 2);
-
-        // TODO how to auto-enable (i.e. perform an auto-destruction) these?
-        // avatarLaser.setVisible(false);
-        // avatarLaser.setEnabled(false);
+        avatarLaser.setDisappearCountdown(15);
       }
     }
 
@@ -1195,6 +1210,7 @@ SpaceInvaders.IngameState = function (game) {
         if (avatarLaser.isVisible() == false) {
           avatarLaser.setVisible(true);
           avatarLaser.setEnabled(true);
+          avatarLaser.setDirectionY(-1);
           avatarLaser.setX(avatar.getCenterX() - avatarLaser.getExtentX());
           avatarLaser.setY(avatar.getY());
           avatarLaser.setAnimationFrameIndex(0);
