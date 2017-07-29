@@ -1027,7 +1027,14 @@ SpaceInvaders.IngameState = function (game) {
   this.game = game;
 
   /** A constant starting step size for the aliens. */
-  this.ALIEN_START_STEP_SIZE = 60;
+  this.ALIEN_START_STEP_SIZE = 55;
+  /** A constant amount to decrement step size on each collided alien. */
+  this.ALIEN_STEP_DECREMENT_SIZE = 1;
+
+  /** The first line amount of movement steps before aliens move downwards. */
+  this.ALIEN_INITIAL_SCROLL_STEPS = 8;
+  /** The line amount of movement steps before aliens move downwards after first line. */
+  this.ALIEN_NORMAL_SCROLL_STEPS = 12;
 
   var footerLine;
   var avatar;
@@ -1040,7 +1047,7 @@ SpaceInvaders.IngameState = function (game) {
   var topOutOfBoundsDetector;
 
   var aliens;
-  var alienScroller = (8 * this.ALIEN_START_STEP_SIZE);
+  var alienScroller = (this.ALIEN_INITIAL_SCROLL_STEPS * this.ALIEN_START_STEP_SIZE);
 
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
@@ -1140,8 +1147,8 @@ SpaceInvaders.IngameState = function (game) {
       alien.setImage(game.getSpriteSheet());
       alien.setDirectionX(1);
       alien.setVelocity(0.4);
-      alien.setAnimationStepSize(60);
-      alien.setStepSize(60);
+      alien.setAnimationStepSize(this.ALIEN_START_STEP_SIZE);
+      alien.setStepSize(this.ALIEN_START_STEP_SIZE);
       alien.setY(y);
       alien.setHeight(24);
       if (row == 0) {
@@ -1172,7 +1179,7 @@ SpaceInvaders.IngameState = function (game) {
     }
 
     // change the y-position of aliens after each full horizontal iteration.
-    if (alienScroller == (12 * aliens[0].getStepSize())) {
+    if (alienScroller == (this.ALIEN_NORMAL_SCROLL_STEPS * aliens[0].getStepSize())) {
       for (i = 0; i < aliens.length; i++) {
         aliens[i].setY(aliens[i].getY() + aliens[i].getHeight());
       }
@@ -1192,7 +1199,7 @@ SpaceInvaders.IngameState = function (game) {
       for (i = 0; i < aliens.length; i++) {
         aliens[i].setDirectionX(-aliens[i].getDirectionX());
       }
-      alienScroller = (12 * aliens[0].getStepSize());
+      alienScroller = (this.ALIEN_NORMAL_SCROLL_STEPS * aliens[0].getStepSize());
     }
 
     // check that the avatar cannot go out-of-bounds from the either side of the scene.
@@ -1252,6 +1259,7 @@ SpaceInvaders.IngameState = function (game) {
             }
 
             // TODO speed up the movement of the aliens.
+            // TODO fix the alienScroller value somehow?
             break;
           }
         }
