@@ -1217,6 +1217,44 @@ SpaceInvaders.IngameState = function (game) {
         avatarLaser.setAnimationFrameIndex(1);
         avatarLaser.setY(topOutOfBoundsDetector.getY() + topOutOfBoundsDetector.getExtentY() * 2);
         avatarLaser.setDisappearCountdown(15);
+      } else {
+        for (n = 0; n < aliens.length; n++) {
+          if (avatarLaser.collides(aliens[n])) {
+            // disable and stop the laser from further movement.
+            avatarLaser.setDirectionY(0);
+            avatarLaser.setEnabled(false);
+
+            // make the explosion to show where the alien was at the moment of collision.
+            avatarLaser.setAnimationFrameIndex(2);
+            avatarLaser.setDisappearCountdown(15);
+            avatarLaser.setX(aliens[n].getCenterX() - avatarLaser.getExtentX());
+            avatarLaser.setY(aliens[n].getCenterY() - avatarLaser.getExtentY());
+
+            // hide and disable the collided alien.
+            aliens[n].setEnabled(false);
+            aliens[n].setVisible(false);
+
+            // earn score to player based on the alien type.
+            var score = 0;
+            if (n < 11) {
+              score = 30;
+            } else if (n < 33) {
+              score = 20;
+            } else {
+              score = 10;
+            }
+
+            // assign the earned score to currently active player.
+            if (game.getActivePlayer() == 1) {
+              game.setPlayer1Score(game.getPlayer1Score() + score);
+            } else {
+              game.setPlayer2Score(game.getPlayer2Score() + score);
+            }
+
+            // TODO speed up the movement of the aliens.
+            break;
+          }
+        }
       }
     }
 
