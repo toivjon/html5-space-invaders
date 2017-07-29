@@ -511,6 +511,99 @@ SpaceInvaders.MovableSpriteEntity = function (game) {
 }
 
 /** ***************************************************************************
+ * An abstraction for all movable sprite entities that can be animated.
+ *
+ * This structure contains the logics required to make an movable entity to be
+ * animated. Animation can be used in two different modes:
+ *
+ * 1. Automatically animated mode.
+ * 2. Manually animated mode.
+ *
+ * Automatically animated mode where the entity is automatically animated when
+ * enough animation steps have been passed. Manually animated mode will only
+ * act as a placeholder for multiple sprites that must be manually assigned to
+ * make the sprite image to change.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the target game instance.
+ */
+SpaceInvaders.AnimatedMovableSpriteEntity = function (game) {
+  SpaceInvaders.MovableSpriteEntity.call(this, game);
+
+  /** A constant default for the animation step size (0 = disable animation). */
+  this.DEFAULT_ANIMATION_STEP_SIZE = 0;
+
+  /** A definition for animation step (i.e. number of ticks) count. */
+  var animationStepSize = this.DEFAULT_ANIMATION_STEP_SIZE;
+  /** A variable used to keep trakc of  the animation change rate. */
+  var animationCounter = 0;
+
+  /** The index of the current animation frame. */
+  var animationFrameIndex = 0;
+  /** The frames for the animation. */
+  var animationFrames = [];
+
+  /** *************************************************************************
+   * Perform an animation step of the animated entity and change the frame when
+   * and if necessary.This function must be called from the parent scene object.
+   */
+  this.animate = function () {
+    if (animationStepSize > 0) {
+      animationCounter = Math.max(0, animationCounter - 1);
+      if (animationCounter <= 0) {
+        var nextFrame = ((animationFrameIndex + 1) % animationFrames.length);
+        this.setAnimationFrameIndex(nextFrame);
+        animationCounter = animationStepSize;
+      }
+    }
+  }
+
+  /** *************************************************************************
+   * Apply the given step size and clear the current step counter of the animation.
+   * @param {number} newStepSize A new step size for the animated entity.
+   */
+  this.setAnimationStepSize = function (newStepSize) {
+    animationStepSize = newStepSize;
+    animationCounter = animationStepSize;
+  }
+
+  /** *************************************************************************
+   * Specify the currently shown animation frame index.
+   * @param {number} newIndex The index of the animation frame to be shown.
+   */
+  this.setAnimationFrameIndex = function (newIndex) {
+    animationFrameIndex = Math.min(animationFrames.length, newIndex);
+
+    // calculate the dimensions for the next animation frame.
+    var newWidth = animationFrames[animationFrameIndex][2];
+    var newHeight = animationFrames[animationFrameIndex][3];
+    var newX = this.getCenterX() - (newWidth / 2);
+    var newY = this.getCenterY() - (newHeight / 2);
+
+    // assign the next animation frame as the current frame.
+    this.setClipX(animationFrames[animationFrameIndex][0]);
+    this.setClipY(animationFrames[animationFrameIndex][1]);
+    this.setWidth(newWidth);
+    this.setHeight(newHeight);
+    this.setX(newX);
+    this.setY(newY);
+  }
+
+  /** *************************************************************************
+   * Add an new animation frame for the animated entity.
+   * @param {number} clipX The sprite-to-image clip x-coordinate.
+   * @param {number} clipY The sprite-to-image clip y-coordinate.
+   * @param {number} width The width of the sprite.
+   * @param {number} height The height of the sprite.
+   */
+  this.addAnimationFrame = function (clipX, clipY, width, height) {
+    animationFrames.push([clipX, clipY, width, height]);
+  }
+
+  this.getAnimationStepSize = function () { return animationStepSize; }
+  this.getAnimationFrameIndex = function () { return animationFrameIndex; }
+}
+
+/** ***************************************************************************
  * A textual entity for all texts used in the Space Invaders game.
  *
  * This class presents a textual entity within the game scene. It does really
@@ -948,18 +1041,21 @@ SpaceInvaders.IngameState = function (game) {
 
   // initialize a single laser for the avatar.
   // we can reuse the same laser instance for the avatar.
-  avatarLaser = new SpaceInvaders.MovableSpriteEntity(game);
+  avatarLaser = new SpaceInvaders.AnimatedMovableSpriteEntity(game);
   avatarLaser.setImage(game.getSpriteSheet());
   avatarLaser.setWidth(6);
   avatarLaser.setHeight(9);
   avatarLaser.setX(0);
   avatarLaser.setY(0);
-  avatarLaser.setClipX(80);
-  avatarLaser.setClipY(36);
   avatarLaser.setVelocity(0.75);
   avatarLaser.setDirectionY(-1);
   avatarLaser.setVisible(false);
   avatarLaser.setEnabled(false);
+  avatarLaser.addAnimationFrame(80, 36, 6, 9);
+  avatarLaser.addAnimationFrame(131, 5, 39, 24);
+  avatarLaser.addAnimationFrame(175, 5, 39, 24);
+  avatarLaser.setAnimationStepSize(0);
+  avatarLaser.setAnimationFrameIndex(0);
 
   // get the amount of lives for the current player.
   var lives = 0;
@@ -1029,13 +1125,21 @@ SpaceInvaders.IngameState = function (game) {
       }
     }
 
-    // check whether the laser shot by the avatar hits something.
+    // animate and check whether the laser shot by the avatar hits something.
     if (avatarLaser.isVisible()) {
+      avatarLaser.animate();
       if (avatarLaser.collides(topOutOfBoundsDetector)) {
-        avatarLaser.setVisible(false);
-        avatarLaser.setEnabled(false);
+        // stop the laser and change the image into the splash explosion image.
+        avatarLaser.setDirectionY(0);
+        avatarLaser.setAnimationFrameIndex(2);
+        avatarLaser.setY(topOutOfBoundsDetector.getY() + topOutOfBoundsDetector.getExtentY() * 2);
+
+        // TODO how to auto-enable (i.e. perform an auto-destruction) these?
+        // avatarLaser.setVisible(false);
+        // avatarLaser.setEnabled(false);
       }
     }
+
   }
 
   this.render = function (ctx) {
@@ -1093,6 +1197,7 @@ SpaceInvaders.IngameState = function (game) {
           avatarLaser.setEnabled(true);
           avatarLaser.setX(avatar.getCenterX() - avatarLaser.getExtentX());
           avatarLaser.setY(avatar.getY());
+          avatarLaser.setAnimationFrameIndex(0);
         }
         break;
     }

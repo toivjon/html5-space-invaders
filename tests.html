@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>HTML5 Space Invaders Tests</title>
   <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.4.0.css">
 </head>
+
 <body>
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
@@ -17,10 +19,10 @@
     QUnit.assert.isUndefined = function (value, message) {
       var result = (value === undefined);
       this.pushResult({
-        result:   result,
-        actual:   value,
+        result: result,
+        actual: value,
         expected: undefined,
-        message:  message
+        message: message
       });
     };
     QUnit.assert.isFalse = function (value, message) {
@@ -143,8 +145,8 @@
           a.deepEqual(e.getFont(), "foobar", "Font setter must work.");
           a.deepEqual(e.getAlign(), "foo-bar", "Align setter must work.");
           a.deepEqual(e.isVisible(), !e.DEFAULT_VISIBLE, "Visibility setter must work.");
-          a.deepEqual(e.getBlinkCount(), e.DEFAULT_BLINK_COUNT+1, "Blink count setter must work.");
-          a.deepEqual(e.getBlinkFrequency(), e.DEFAULT_BLINK_FREQUENCY+1, "Blink frequency setter must work.");
+          a.deepEqual(e.getBlinkCount(), e.DEFAULT_BLINK_COUNT + 1, "Blink count setter must work.");
+          a.deepEqual(e.getBlinkFrequency(), e.DEFAULT_BLINK_FREQUENCY + 1, "Blink frequency setter must work.");
         });
 
         QUnit.test("Check that text entity visiblity works correctly.", function (a) {
@@ -152,7 +154,7 @@
           a.expect(1);
 
           // construct a testing context object to calculate the amount of render calls.
-          var ctx = { fillText: function (x, y, z) { a.step("The fillText is called."); }}
+          var ctx = { fillText: function (x, y, z) { a.step("The fillText is called."); } }
 
           // first check that a visible text entity will be rendered.
           e.setVisible(true);
@@ -168,7 +170,7 @@
           a.expect((e.DEFAULT_BLINK_COUNT * e.DEFAULT_BLINK_FREQUENCY) + e.DEFAULT_BLINK_FREQUENCY);
 
           // construct a testing context object to calculate the amount of render calls.
-          var ctx = { fillText: function (x, y, z) { a.step("The fillText is called."); }}
+          var ctx = { fillText: function (x, y, z) { a.step("The fillText is called."); } }
 
           // check that initially invisible object is not getting blinked (asserts: 0)
           e.setVisible(false);
@@ -384,9 +386,98 @@
           a.deepEqual(e.getY(), oldY + (2 * 5), "Entity must be now moved in the y-axis.");
         });
 
+        QUnit.test("Check that animated movable sprite entity construction works.", function (a) {
+          var e = new SpaceInvaders.AnimatedMovableSpriteEntity(this.game);
+          a.deepEqual(e.getAnimationStepSize(), e.DEFAULT_ANIMATION_STEP_SIZE, "Step size must be set.");
+          a.deepEqual(e.getAnimationFrameIndex(), 0, "Frame index must be set.");
+        });
+
+        QUnit.test("Check that manual animating works.", function (a) {
+          var e = new SpaceInvaders.AnimatedMovableSpriteEntity(this.game);
+          e.setImage(new Image());
+          e.addAnimationFrame(1, 2, 3, 4);
+          e.addAnimationFrame(5, 6, 7, 8);
+          e.setAnimationFrameIndex(0);
+          e.setAnimationStepSize(0); // manual
+
+          // check that first frame definitions are assigned.
+          a.deepEqual(e.getClipX(), 1, "Sprite x-clip must be set.");
+          a.deepEqual(e.getClipY(), 2, "Sprite y-clip must be set.");
+          a.deepEqual(e.getWidth(), 3, "Sprite width must be set.");
+          a.deepEqual(e.getHeight(), 4, "Sprite height must be set.");
+
+          // make some animation updates.
+          for (i = 0; i < 100; i++) {
+            e.animate();
+          }
+
+          // check that first frame definitions still exists.
+          a.deepEqual(e.getClipX(), 1, "Sprite x-clip must be set.");
+          a.deepEqual(e.getClipY(), 2, "Sprite y-clip must be set.");
+          a.deepEqual(e.getWidth(), 3, "Sprite width must be set.");
+          a.deepEqual(e.getHeight(), 4, "Sprite height must be set.");
+
+          // change the animation frame index manually.
+          e.setAnimationFrameIndex(1);
+
+          // check that second frame definitions are assigned.
+          a.deepEqual(e.getClipX(), 5, "Sprite x-clip must be set.");
+          a.deepEqual(e.getClipY(), 6, "Sprite y-clip must be set.");
+          a.deepEqual(e.getWidth(), 7, "Sprite width must be set.");
+          a.deepEqual(e.getHeight(), 8, "Sprite height must be set.");
+        });
+
+        QUnit.test("Check that automatic animating works.", function (a) {
+          var e = new SpaceInvaders.AnimatedMovableSpriteEntity(this.game);
+          e.setImage(new Image());
+          e.addAnimationFrame(1, 2, 3, 4);
+          e.addAnimationFrame(5, 6, 7, 8);
+          e.setAnimationFrameIndex(0);
+          e.setAnimationStepSize(5); // automatic
+
+          // check that first frame definitions are assigned.
+          a.deepEqual(e.getAnimationFrameIndex(), 0, "Frame index must be 0.");
+          a.deepEqual(e.getClipX(), 1, "Sprite x-clip must be set.");
+          a.deepEqual(e.getClipY(), 2, "Sprite y-clip must be set.");
+          a.deepEqual(e.getWidth(), 3, "Sprite width must be set.");
+          a.deepEqual(e.getHeight(), 4, "Sprite height must be set.");
+
+          // make some animation updates.
+          for (i = 0; i < 4; i++) {
+            e.animate();
+            // check that first frame definitions still persist.
+            a.deepEqual(e.getAnimationFrameIndex(), 0, "Frame index must be 0.");
+            a.deepEqual(e.getClipX(), 1, "Sprite x-clip must be set.");
+            a.deepEqual(e.getClipY(), 2, "Sprite y-clip must be set.");
+            a.deepEqual(e.getWidth(), 3, "Sprite width must be set.");
+            a.deepEqual(e.getHeight(), 4, "Sprite height must be set.");
+          }
+
+          // perform fifth update and check that the frame is changed.
+          e.animate();
+          a.deepEqual(e.getAnimationFrameIndex(), 1, "Frame index must be changed.");
+          a.deepEqual(e.getClipX(), 5, "Sprite x-clip must be set.");
+          a.deepEqual(e.getClipY(), 6, "Sprite y-clip must be set.");
+          a.deepEqual(e.getWidth(), 7, "Sprite width must be set.");
+          a.deepEqual(e.getHeight(), 8, "Sprite height must be set.");
+
+          // make some animation updates until the frame should be changed again.
+          for (i = 0; i < 5; i++) {
+            e.animate();
+          }
+
+          // check that the first frame is changed back again.
+          a.deepEqual(e.getAnimationFrameIndex(), 0, "Frame index must be 0.");
+          a.deepEqual(e.getClipX(), 1, "Sprite x-clip must be set.");
+          a.deepEqual(e.getClipY(), 2, "Sprite y-clip must be set.");
+          a.deepEqual(e.getWidth(), 3, "Sprite width must be set.");
+          a.deepEqual(e.getHeight(), 4, "Sprite height must be set.");
+        });
+
       });
     });
     // ========================================================================
   </script>
 </body>
+
 </html>
