@@ -1036,6 +1036,8 @@ SpaceInvaders.IngameState = function (game) {
   var rightOutOfBoundsDetector;
   var topOutOfBoundsDetector;
 
+  var aliens;
+
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
   footerLine.setImage(game.getSpriteSheet());
@@ -1124,10 +1126,51 @@ SpaceInvaders.IngameState = function (game) {
   topOutOfBoundsDetector.setExtentX(768 / 2);
   topOutOfBoundsDetector.setExtentY(45);
 
+  // initialize aliens.
+  aliens = [];
+  for (row = 0; row < 5; row++) {
+    var y = 192 + (24 * 2 * row);
+    var x = lifeSprites[0].getX();
+    for (col = 0; col < 11; col++) {
+      var alien = new SpaceInvaders.AnimatedMovableSpriteEntity(game);
+      alien.setImage(game.getSpriteSheet());
+      alien.setDirectionX(1);
+      alien.setVelocity(0.25);
+      alien.setAnimationStepSize(60);
+      alien.setStepSize(60);
+      alien.setY(y);
+      alien.setHeight(24);
+      if (row == 0) {
+        alien.setWidth(24);
+        alien.setX(x + 6 + (col * 2 * 24));
+        alien.addAnimationFrame(5, 62, 24, 24);
+        alien.addAnimationFrame(34, 62, 24, 24);
+      } else if (row < 3) {
+        alien.setWidth(33);
+        alien.setX(x + 1 + (col * 2 * 24));
+        alien.addAnimationFrame(5, 33, 33, 24);
+        alien.addAnimationFrame(43, 33, 33, 24);
+      } else {
+        alien.setWidth(36);
+        alien.setX(x + (col * 2 * 24));
+        alien.addAnimationFrame(5, 5, 36, 24);
+        alien.addAnimationFrame(46, 5, 36, 24);
+      }
+      alien.setAnimationFrameIndex(0);
+      aliens.push(alien);
+    }
+  }
+
   this.update = function (dt) {
     avatar.update(dt);
     if (avatarLaser.isVisible()) {
       avatarLaser.update(dt);
+    }
+    for (i = 0; i < aliens.length; i++) {
+      if (aliens[i].isVisible()) {
+        aliens[i].update(dt);
+        aliens[i].animate();
+      }
     }
 
     // check that the avatar cannot go out-of-bounds from the either side of the scene.
@@ -1164,6 +1207,9 @@ SpaceInvaders.IngameState = function (game) {
     lifesText.render(ctx);
     for (i = 0; i < lifeSprites.length; i++) {
       lifeSprites[i].render(ctx);
+    }
+    for (i = 0; i < aliens.length; i++) {
+      aliens[i].render(ctx);
     }
   }
 
