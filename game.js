@@ -1026,6 +1026,9 @@ SpaceInvaders.IngameState = function (game) {
   /** A reference to the root game instance. */
   this.game = game;
 
+  /** A constant starting step size for the aliens. */
+  this.ALIEN_START_STEP_SIZE = 60;
+
   var footerLine;
   var avatar;
   var avatarLaser;
@@ -1037,6 +1040,7 @@ SpaceInvaders.IngameState = function (game) {
   var topOutOfBoundsDetector;
 
   var aliens;
+  var alienScroller = (8 * this.ALIEN_START_STEP_SIZE);
 
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
@@ -1135,7 +1139,7 @@ SpaceInvaders.IngameState = function (game) {
       var alien = new SpaceInvaders.AnimatedMovableSpriteEntity(game);
       alien.setImage(game.getSpriteSheet());
       alien.setDirectionX(1);
-      alien.setVelocity(0.25);
+      alien.setVelocity(0.4);
       alien.setAnimationStepSize(60);
       alien.setStepSize(60);
       alien.setY(y);
@@ -1166,11 +1170,29 @@ SpaceInvaders.IngameState = function (game) {
     if (avatarLaser.isVisible()) {
       avatarLaser.update(dt);
     }
+
+    // change the y-position of aliens after each full horizontal iteration.
+    if (alienScroller == (12 * aliens[0].getStepSize())) {
+      for (i = 0; i < aliens.length; i++) {
+        aliens[i].setY(aliens[i].getY() + aliens[i].getHeight());
+      }
+    }
+
+    // animate and update the currently visible aliens.
     for (i = 0; i < aliens.length; i++) {
       if (aliens[i].isVisible()) {
         aliens[i].update(dt);
         aliens[i].animate();
       }
+    }
+
+    // change the movement x-direction for aliens when scrolled at certain position.
+    alienScroller--;
+    if (alienScroller <= 0) {
+      for (i = 0; i < aliens.length; i++) {
+        aliens[i].setDirectionX(-aliens[i].getDirectionX());
+      }
+      alienScroller = (12 * aliens[0].getStepSize());
     }
 
     // check that the avatar cannot go out-of-bounds from the either side of the scene.
