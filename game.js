@@ -1271,8 +1271,12 @@ SpaceInvaders.IngameState = function (game) {
               game.setPlayer2Score(game.getPlayer2Score() + score);
             }
 
-            // TODO speed up the movement of the aliens.
-            // TODO fix the alienScroller value somehow?
+            // speed up the movement of the aliens.
+            var newStepSize = aliens[0].getStepSize() - this.ALIEN_STEP_DECREMENT_SIZE;
+            for (m = 0; m < aliens.length; m++) {
+              aliens[m].setStepSize(newStepSize);
+              aliens[m].setAnimationStepSize(newStepSize);
+            }
             break;
           }
         }
