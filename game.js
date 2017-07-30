@@ -522,6 +522,7 @@ SpaceInvaders.MovableSpriteEntity = function (game) {
   this.getDirectionX = function () { return directionX; }
   this.getDirectionY = function () { return directionY; }
   this.getStepSize = function () { return stepSize; }
+  this.getStepCounter = function () { return stepCounter; }
 
   this.setVelocity = function (newVelocity) { velocity = newVelocity; }
   this.setDirectionX = function (newDirection) { directionX = newDirection; }
@@ -1031,11 +1032,6 @@ SpaceInvaders.IngameState = function (game) {
   /** A constant amount to decrement step size on each collided alien. */
   this.ALIEN_STEP_DECREMENT_SIZE = 1;
 
-  /** The first line amount of movement steps before aliens move downwards. */
-  this.ALIEN_INITIAL_SCROLL_STEPS = 8;
-  /** The line amount of movement steps before aliens move downwards after first line. */
-  this.ALIEN_NORMAL_SCROLL_STEPS = 12;
-
   var footerLine;
   var avatar;
   var avatarLaser;
@@ -1047,7 +1043,8 @@ SpaceInvaders.IngameState = function (game) {
   var topOutOfBoundsDetector;
 
   var aliens;
-  var alienScroller = (this.ALIEN_INITIAL_SCROLL_STEPS * this.ALIEN_START_STEP_SIZE);
+  var alienLeftBoundsDetector;
+  var alienRightBoundsDetector;
 
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
@@ -1172,34 +1169,50 @@ SpaceInvaders.IngameState = function (game) {
     }
   }
 
+  // initialize the left bounds detector for the aliens.
+  alienLeftBoundsDetector = new SpaceInvaders.CollideableEntity(game);
+  alienLeftBoundsDetector.setX(-45);
+  alienLeftBoundsDetector.setY(0);
+  alienLeftBoundsDetector.setExtentX(45);
+  alienLeftBoundsDetector.setExtentY(768 / 2);
+
+  // initialize the right bounds detector for the aliens.
+  alienRightBoundsDetector = new SpaceInvaders.CollideableEntity(game);
+  alienRightBoundsDetector.setX(672 - 45);
+  alienRightBoundsDetector.setY(0);
+  alienRightBoundsDetector.setExtentX(45);
+  alienRightBoundsDetector.setExtentY(768 / 2);
+
   this.update = function (dt) {
     avatar.update(dt);
     if (avatarLaser.isVisible()) {
       avatarLaser.update(dt);
     }
 
-    // change the y-position of aliens after each full horizontal iteration.
-    if (alienScroller == (this.ALIEN_NORMAL_SCROLL_STEPS * aliens[0].getStepSize())) {
-      for (i = 0; i < aliens.length; i++) {
-        aliens[i].setY(aliens[i].getY() + aliens[i].getHeight());
+    // check whether any of the aliens hit the alien movement bounds.
+    var aliensHitBounds = false;
+    for (i = 0; i < aliens.length && !aliensHitBounds; i++) {
+      if (aliens[i].getDirectionX() > 0) {
+        if (alienRightBoundsDetector.collides(aliens[i])) {
+          aliensHitBounds = true;
+        }
+      } else {
+        if (alienLeftBoundsDetector.collides(aliens[i])) {
+          aliensHitBounds = true;
+        }
       }
     }
 
     // animate and update the currently visible aliens.
     for (i = 0; i < aliens.length; i++) {
+      if (aliensHitBounds && aliens[i].getStepCounter()) {
+        aliens[i].setDirectionX(-aliens[i].getDirectionX());
+        aliens[i].setY(aliens[i].getY() + aliens[i].getHeight());
+      }
       if (aliens[i].isVisible()) {
         aliens[i].update(dt);
         aliens[i].animate();
       }
-    }
-
-    // change the movement x-direction for aliens when scrolled at certain position.
-    alienScroller--;
-    if (alienScroller <= 0) {
-      for (i = 0; i < aliens.length; i++) {
-        aliens[i].setDirectionX(-aliens[i].getDirectionX());
-      }
-      alienScroller = (this.ALIEN_NORMAL_SCROLL_STEPS * aliens[0].getStepSize());
     }
 
     // check that the avatar cannot go out-of-bounds from the either side of the scene.
