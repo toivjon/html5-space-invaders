@@ -576,7 +576,7 @@ SpaceInvaders.AlienShotEntity = function (game, scene) {
     this.setVisible(true);
     this.setEnabled(true);
     this.setDirectionY(1);
-    progressTicks = 0;
+    progressTicks = 1;
   }
 
   this.explode = function () {
@@ -1448,18 +1448,6 @@ SpaceInvaders.IngameState = function (game) {
         alienShots[0].fire();
       }
     }
-    alienShots[0].animateAndUpdate(dt);
-    if (alienShots[0].isVisible()) {
-      // check whether the shot hits the avatar (i.e. player).
-      if (alienShots[0].collides(avatar)) {
-        // TODO explosion to avatar!
-        alienShots[0].setEnabled(false);
-        alienShots[0].setVisible(false);
-      } else if (alienShots[0].collides(footerLine)) {
-        // explode at the footer.
-        alienShots[0].explode();
-      }
-    }
 
     // ========================================================================
     // create an alien plunger missile if it is being ready.
@@ -1480,18 +1468,6 @@ SpaceInvaders.IngameState = function (game) {
             break;
           }
         }
-      }
-    }
-    alienShots[1].animateAndUpdate(dt);
-    if (alienShots[1].isVisible()) {
-      // check whether the shot hits the avatar (i.e. player).
-      if (alienShots[1].collides(avatar)) {
-        // TODO explosion to avatar!
-        alienShots[1].setEnabled(false);
-        alienShots[1].setVisible(false);
-      } else if (alienShots[1].collides(footerLine)) {
-        // explode at the footer.
-        alienShots[1].explode();
       }
     }
 
@@ -1515,16 +1491,16 @@ SpaceInvaders.IngameState = function (game) {
       }
     }
 
-    alienShots[2].animateAndUpdate(dt);
-    if (alienShots[2].isVisible()) {
-      // check whether the shot hits the avatar (i.e. player).
-      if (alienShots[2].collides(avatar)) {
-        // TODO explosion to avatar!
-        alienShots[2].setEnabled(false);
-        alienShots[2].setVisible(false);
-      } else if (alienShots[2].collides(footerLine)) {
+    // animate, update and check collisions for all alien shots.
+    for (i = 0; i < alienShots.length; i++) {
+      alienShots[i].animateAndUpdate(dt);
+      if (alienShots[i].collides(avatar)) {
+        // TODO explode the avatar.
+        alienShots[i].setEnabled(false);
+        alienShots[i].setVisible(false);
+      } else if (alienShots[i].collides(footerLine)) {
         // explode at the footer.
-        alienShots[2].explode();
+        alienShots[i].explode();
       }
     }
 
