@@ -1152,6 +1152,8 @@ SpaceInvaders.IngameState = function (game) {
   var alienShotColumn = [
     0, 6, 0, 0, 0, 3, 10, 0, 5, 2, 0, 0, 10, 8, 1, 7, 1, 10, 3, 6, 9
   ];
+  /** A lock used to prevent rolling shot to be created constantly. */
+  var alienRollingShotLock = 0;
 
   this.getAlienReloadRate = function () {
     // get the score of the current player.
@@ -1422,30 +1424,35 @@ SpaceInvaders.IngameState = function (game) {
 
     // check and apply a state for the alien rolling missile.
     if (alienShots[0].isReadyToBeFired()) {
-      // find the nearest alien from the list of aliens.
-      var avatarX = avatar.getCenterX();
-      var found = false;
-      for (col = 1; col < 11 && !found; col++) {
-        var d1 = Math.abs(aliens[col - 1].getCenterX() - avatarX);
-        var d2 = Math.abs(aliens[col].getCenterX() - avatarX);
-        if (d2 > d1 || col == 10) {
-          while (!found && col > 0) {
-            for (row = 4; row >= 0 && !found; row--) {
-              var idx = (row * 11) + (d2 <= d1 ? col : col - 1);
-              if (aliens[idx].isVisible()) {
-                alienShots[0].setX(aliens[idx].getCenterX() - alienShots[0].getExtentX());
-                alienShots[0].setY(aliens[idx].getY() + aliens[idx].getHeight());
-                found = true;
+      if (alienRollingShotLock == 1) {
+        alienRollingShotLock = 0;
+      } else {
+        // find the nearest alien from the list of aliens.
+        var avatarX = avatar.getCenterX();
+        var found = false;
+        for (col = 1; col < 11 && !found; col++) {
+          var d1 = Math.abs(aliens[col - 1].getCenterX() - avatarX);
+          var d2 = Math.abs(aliens[col].getCenterX() - avatarX);
+          if (d2 > d1 || col == 10) {
+            while (!found && col > 0) {
+              for (row = 4; row >= 0 && !found; row--) {
+                var idx = (row * 11) + (d2 <= d1 ? col : col - 1);
+                if (aliens[idx].isVisible()) {
+                  alienShots[0].setX(aliens[idx].getCenterX() - alienShots[0].getExtentX());
+                  alienShots[0].setY(aliens[idx].getY() + aliens[idx].getHeight());
+                  found = true;
+                }
               }
-            }
-            if (!found) {
-              col--;
+              if (!found) {
+                col--;
+              }
             }
           }
         }
-      }
-      if (found) {
-        alienShots[0].fire();
+        if (found) {
+          alienShots[0].fire();
+        }
+        alienRollingShotLock = 1;
       }
     }
 
