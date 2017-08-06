@@ -567,9 +567,25 @@ SpaceInvaders.AlienShotEntity = function (game, scene) {
   }
 
   this.fire = function () {
+    var animationFrames = this.getAnimationFrames();
+    if (animationFrames.length > 3) {
+      animationFrames.pop();
+    }
+    this.setAnimationFrameIndex(0);
+    this.setAnimationStepSize(4);
     this.setVisible(true);
     this.setEnabled(true);
+    this.setDirectionY(1);
     progressTicks = 0;
+  }
+
+  this.explode = function () {
+    this.addAnimationFrame(218, 5, 18, 24);
+    this.setAnimationStepSize(0);
+    this.setAnimationFrameIndex(3);
+    this.setEnabled(false);
+    this.setDisappearCountdown(10);
+    this.setDirectionY(0);
   }
 
   this.isReadyToBeFired = function () {
@@ -693,6 +709,7 @@ SpaceInvaders.AnimatedMovableSpriteEntity = function (game) {
 
   this.getAnimationStepSize = function () { return animationStepSize; }
   this.getAnimationFrameIndex = function () { return animationFrameIndex; }
+  this.getAnimationFrames = function () { return animationFrames; }
 }
 
 /** ***************************************************************************
@@ -1440,8 +1457,7 @@ SpaceInvaders.IngameState = function (game) {
         alienShots[0].setVisible(false);
       } else if (alienShots[0].collides(footerLine)) {
         // TODO explosion to footer.
-        alienShots[0].setEnabled(false);
-        alienShots[0].setVisible(false);
+        alienShots[0].explode();
       }
     }
 
@@ -1475,8 +1491,7 @@ SpaceInvaders.IngameState = function (game) {
         alienShots[1].setVisible(false);
       } else if (alienShots[1].collides(footerLine)) {
         // TODO explosion to footer.
-        alienShots[1].setEnabled(false);
-        alienShots[1].setVisible(false);
+        alienShots[1].explode();
       }
     }
 
@@ -1509,8 +1524,7 @@ SpaceInvaders.IngameState = function (game) {
         alienShots[2].setVisible(false);
       } else if (alienShots[2].collides(footerLine)) {
         // TODO explosion to footer.
-        alienShots[2].setEnabled(false);
-        alienShots[2].setVisible(false);
+        alienShots[2].explode();
       }
     }
 
