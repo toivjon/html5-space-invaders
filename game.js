@@ -1377,12 +1377,14 @@ SpaceInvaders.IngameState = function (game) {
     }
 
     // animate and update the currently visible aliens.
+    var activeAlienCount = 0;
     for (i = 0; i < aliens.length; i++) {
       if (aliensHitBounds && aliens[i].getStepCounter()) {
         aliens[i].setDirectionX(-aliens[i].getDirectionX());
         aliens[i].setY(aliens[i].getY() + aliens[i].getHeight());
       }
       if (aliens[i].isVisible()) {
+        activeAlienCount++;
         aliens[i].update(dt);
         aliens[i].animate();
       }
@@ -1445,20 +1447,22 @@ SpaceInvaders.IngameState = function (game) {
 
     // ========================================================================
     // create an alien plunger missile if it is being ready.
-    if (alienShots[1].isReadyToBeFired()) {
-      // get the next target column and increment the column index pointer.
-      var column = alienShotColumn[alienPlungerShotColumnIndice];
-      alienPlungerShotColumnIndice = (alienPlungerShotColumnIndice + 1);
-      alienPlungerShotColumnIndice = (alienPlungerShotColumnIndice % this.ALIEN_SHOT_INDICE_COUNT);
+    if (activeAlienCount > 1) {
+      if (alienShots[1].isReadyToBeFired()) {
+        // get the next target column and increment the column index pointer.
+        var column = alienShotColumn[alienPlungerShotColumnIndice];
+        alienPlungerShotColumnIndice = (alienPlungerShotColumnIndice + 1);
+        alienPlungerShotColumnIndice = (alienPlungerShotColumnIndice % this.ALIEN_SHOT_INDICE_COUNT);
 
-      for (n = 4; n >= 0; n--) {
-        var idx = (n * 11) + column;
-        if (aliens[idx].isVisible()) {
-          // assign the position of the plunger shot based on the nearest alien.
-          alienShots[1].setX(aliens[idx].getCenterX() - alienShots[1].getExtentX());
-          alienShots[1].setY(aliens[idx].getY() + aliens[idx].getHeight());
-          alienShots[1].fire();
-          break;
+        for (n = 4; n >= 0; n--) {
+          var idx = (n * 11) + column;
+          if (aliens[idx].isVisible()) {
+            // assign the position of the plunger shot based on the nearest alien.
+            alienShots[1].setX(aliens[idx].getCenterX() - alienShots[1].getExtentX());
+            alienShots[1].setY(aliens[idx].getY() + aliens[idx].getHeight());
+            alienShots[1].fire();
+            break;
+          }
         }
       }
     }
