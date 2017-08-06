@@ -1456,7 +1456,7 @@ SpaceInvaders.IngameState = function (game) {
         alienShots[0].setEnabled(false);
         alienShots[0].setVisible(false);
       } else if (alienShots[0].collides(footerLine)) {
-        // TODO explosion to footer.
+        // explode at the footer.
         alienShots[0].explode();
       }
     }
@@ -1490,7 +1490,7 @@ SpaceInvaders.IngameState = function (game) {
         alienShots[1].setEnabled(false);
         alienShots[1].setVisible(false);
       } else if (alienShots[1].collides(footerLine)) {
-        // TODO explosion to footer.
+        // explode at the footer.
         alienShots[1].explode();
       }
     }
@@ -1523,7 +1523,7 @@ SpaceInvaders.IngameState = function (game) {
         alienShots[2].setEnabled(false);
         alienShots[2].setVisible(false);
       } else if (alienShots[2].collides(footerLine)) {
-        // TODO explosion to footer.
+        // explode at the footer.
         alienShots[2].explode();
       }
     }
