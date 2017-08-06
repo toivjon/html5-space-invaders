@@ -530,6 +530,79 @@ SpaceInvaders.MovableSpriteEntity = function (game) {
 }
 
 /** ***************************************************************************
+ * An abstraction for all alien shots.
+ *
+ * This structure contains the additional definitions and methods for the alien
+ * shots. There are three different alien shots available; rolling, plumbing
+ * and the squiggly shot. Each shot has a bit different behavior, which are
+ * described in the following table.
+ *
+ * Rolling shot
+ * A "homing" shot that is always launched from the players nearest alien.
+ *
+ * Plunger shot
+ * A shot that follows a predefined alien columns list and is not used when there
+ * is only one alien left OR when the flying saucer is being shown.
+ *
+ * Squiggly shot
+ * A shot that follows a predefined alien columns list.
+ *
+ * Table is based on foundings from the following URL:
+ * http://www.computerarcheology.com/Arcade/SpaceInvaders/Code.html
+ *
+ * @param {SpaceInvaders.Game} game A reference to the target game instance.
+ */
+SpaceInvaders.AlienShotEntity = function (game, scene) {
+  SpaceInvaders.AnimatedMovableSpriteEntity.call(this, game);
+
+  /** A counter to keep track of the amount of update calls. */
+  var progressTicks = 0;
+
+  this.animateAndUpdate = function (dt) {
+    if (this.isVisible()) {
+      this.animate();
+      this.update(dt);
+      progressTicks++;
+    }
+  }
+
+  this.fire = function () {
+    this.setVisible(true);
+    this.setEnabled(true);
+    progressTicks = 0;
+  }
+
+  this.isReadyToBeFired = function () {
+    // do not allow shot to be re-fired when still in progress.
+    if (this.isVisible()) {
+      return false;
+    }
+
+    // get a reference to the array of alien shots and the reload rate.
+    var shots = scene.getAlienShots();
+    var reloadRate = scene.getAlienReloadRate();
+
+    // iterate over shots to check whether aliens have reloaded their weapons.
+    for (i = 0; i < shots.length; i++) {
+      var shotTicks = shots[i].getProgressTicks();
+      if (shots[i] != this) {
+        if (shotTicks > 0) {
+          if (reloadRate >= shotTicks) {
+            return false;
+          }
+        }
+      }
+    }
+
+    // aliens have been reloaded and it's ok to fire now.
+    return true;
+  }
+
+  this.getProgressTicks = function () { return progressTicks; }
+
+}
+
+/** ***************************************************************************
  * An abstraction for all movable sprite entities that can be animated.
  *
  * This structure contains the logics required to make an movable entity to be
@@ -1032,6 +1105,13 @@ SpaceInvaders.IngameState = function (game) {
   /** A constant amount to decrement step size on each collided alien. */
   this.ALIEN_STEP_DECREMENT_SIZE = 1;
 
+  /** A constant index for the plunger shot column array start index. */
+  this.ALIEN_PLUNGER_SHOT_START_INDEX = 0;
+  /** A constant index for the squiggly shot column array start index.  */
+  this.ALIEN_SQUIGGLY_SHOT_START_INDEX = 6;
+  /** A constant amount of shot indices per shot type (round-robin). */
+  this.ALIEN_SHOT_INDICE_COUNT = 15;
+
   var footerLine;
   var avatar;
   var avatarLaser;
@@ -1045,6 +1125,39 @@ SpaceInvaders.IngameState = function (game) {
   var aliens;
   var alienLeftBoundsDetector;
   var alienRightBoundsDetector;
+  var alienShots;
+
+  /** The current shot column index of the plunger shot.  */
+  var alienPlungerShotColumnIndice = this.ALIEN_PLUNGER_SHOT_START_INDEX;
+  /** The current shot column index of the squiggly shot. */
+  var alienSquigglyShotColumnIndice = this.ALIEN_SQUIGGLY_SHOT_START_INDEX;
+  /** The column indices used to define where to shoot the alien missiles. */
+  var alienShotColumn = [
+    0, 6, 0, 0, 0, 3, 10, 0, 5, 2, 0, 0, 10, 8, 1, 7, 1, 10, 3, 6, 9
+  ];
+
+  this.getAlienReloadRate = function () {
+    // get the score of the current player.
+    var currentScore = 0;
+    if (game.getActivePlayer() == 1) {
+      currentScore = game.getPlayer1Score();
+    } else {
+      currentScore = game.getPlayer2Score();
+    }
+
+    // return a reload rate based on the current score.
+    if (currentScore <= 200) {
+      return 48;
+    } else if (currentScore <= 1000) {
+      return 16;
+    } else if (currentScore <= 2000) {
+      return 11;
+    } else if (currentScore <= 3000) {
+      return 8;
+    } else {
+      return 7;
+    }
+  }
 
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
@@ -1183,6 +1296,66 @@ SpaceInvaders.IngameState = function (game) {
   alienRightBoundsDetector.setExtentX(45);
   alienRightBoundsDetector.setExtentY(768 / 2);
 
+  // ===============
+  // = ALIEN SHOTS =
+  // ===============
+
+  // initialize the rolling (i.e. homing) alien shot.
+  var rollingShot = new SpaceInvaders.AlienShotEntity(game, this);
+  rollingShot.setImage(game.getSpriteSheet());
+  rollingShot.setWidth(9);
+  rollingShot.setHeight(21);
+  rollingShot.setVelocity(0.2);
+  rollingShot.setDirectionY(1);
+  rollingShot.addAnimationFrame(149, 37, 9, 21);
+  rollingShot.addAnimationFrame(163, 37, 9, 21);
+  rollingShot.addAnimationFrame(149, 37, 9, 21);
+  rollingShot.addAnimationFrame(178, 37, 9, 21);
+  rollingShot.setAnimationFrameIndex(0);
+  rollingShot.setAnimationStepSize(4);
+  rollingShot.setVisible(false);
+  rollingShot.setEnabled(false);
+
+  // initialize the plunger alien shot.
+  var plungerShot = new SpaceInvaders.AlienShotEntity(game, this);
+  plungerShot.setImage(game.getSpriteSheet());
+  plungerShot.setWidth(9);
+  plungerShot.setHeight(18);
+  plungerShot.setVelocity(0.2);
+  plungerShot.setDirectionY(1);
+  plungerShot.addAnimationFrame(93, 37, 9, 21);
+  plungerShot.addAnimationFrame(107, 37, 9, 21);
+  plungerShot.addAnimationFrame(121, 37, 9, 21);
+  plungerShot.addAnimationFrame(135, 37, 9, 21);
+  plungerShot.setAnimationFrameIndex(0);
+  plungerShot.setAnimationStepSize(4);
+  plungerShot.setVisible(false);
+  plungerShot.setEnabled(false);
+
+  // initialize the squiggly alien shot.
+  var squigglyShot = new SpaceInvaders.AlienShotEntity(game, this);
+  squigglyShot.setImage(game.getSpriteSheet());
+  squigglyShot.setWidth(9);
+  squigglyShot.setHeight(21);
+  squigglyShot.setVelocity(0.2);
+  squigglyShot.setDirectionY(1);
+  squigglyShot.addAnimationFrame(191, 37, 9, 21);
+  squigglyShot.addAnimationFrame(206, 37, 9, 21);
+  squigglyShot.addAnimationFrame(221, 37, 9, 21);
+  squigglyShot.addAnimationFrame(236, 37, 9, 21);
+  squigglyShot.setAnimationFrameIndex(0);
+  squigglyShot.setAnimationStepSize(4);
+  squigglyShot.setVisible(false);
+  squigglyShot.setEnabled(false);
+
+  // initialize the array of alien shots.
+  alienShots = [];
+  alienShots.push(rollingShot);
+  alienShots.push(plungerShot);
+  alienShots.push(squigglyShot);
+
+  this.getAlienShots = function () { return alienShots; }
+
   this.update = function (dt) {
     avatar.update(dt);
     if (avatarLaser.isVisible()) {
@@ -1225,6 +1398,115 @@ SpaceInvaders.IngameState = function (game) {
       if (rightOutOfBoundsDetector.collides(avatar)) {
         avatar.setDirectionX(0);
         avatar.setX(rightOutOfBoundsDetector.getX() - avatar.getWidth());
+      }
+    }
+
+    // check and apply a state for the alien rolling missile.
+    if (alienShots[0].isReadyToBeFired()) {
+      // find the nearest alien from the list of aliens.
+      var avatarX = avatar.getCenterX();
+      var found = false;
+      for (col = 1; col < 11 && !found; col++) {
+        var d1 = Math.abs(aliens[col - 1].getCenterX() - avatarX);
+        var d2 = Math.abs(aliens[col].getCenterX() - avatarX);
+        if (d2 > d1 || col == 10) {
+          while (!found && col > 0) {
+            for (row = 4; row >= 0 && !found; row--) {
+              var idx = (row * 11) + (d2 <= d1 ? col : col - 1);
+              if (aliens[idx].isVisible()) {
+                alienShots[0].setX(aliens[idx].getCenterX() - alienShots[0].getExtentX());
+                alienShots[0].setY(aliens[idx].getY() + aliens[idx].getHeight());
+                found = true;
+              }
+            }
+            if (!found) {
+              col--;
+            }
+          }
+        }
+      }
+      if (found) {
+        alienShots[0].fire();
+      }
+    }
+    alienShots[0].animateAndUpdate(dt);
+    if (alienShots[0].isVisible()) {
+      // check whether the shot hits the avatar (i.e. player).
+      if (alienShots[0].collides(avatar)) {
+        // TODO explosion to avatar!
+        alienShots[0].setEnabled(false);
+        alienShots[0].setVisible(false);
+      } else if (alienShots[0].collides(footerLine)) {
+        // TODO explosion to footer.
+        alienShots[0].setEnabled(false);
+        alienShots[0].setVisible(false);
+      }
+    }
+
+    // ========================================================================
+    // create an alien plunger missile if it is being ready.
+    if (alienShots[1].isReadyToBeFired()) {
+      // get the next target column and increment the column index pointer.
+      var column = alienShotColumn[alienPlungerShotColumnIndice];
+      alienPlungerShotColumnIndice = (alienPlungerShotColumnIndice + 1);
+      alienPlungerShotColumnIndice = (alienPlungerShotColumnIndice % this.ALIEN_SHOT_INDICE_COUNT);
+
+      for (n = 4; n >= 0; n--) {
+        var idx = (n * 11) + column;
+        if (aliens[idx].isVisible()) {
+          // assign the position of the plunger shot based on the nearest alien.
+          alienShots[1].setX(aliens[idx].getCenterX() - alienShots[1].getExtentX());
+          alienShots[1].setY(aliens[idx].getY() + aliens[idx].getHeight());
+          alienShots[1].fire();
+          break;
+        }
+      }
+    }
+    alienShots[1].animateAndUpdate(dt);
+    if (alienShots[1].isVisible()) {
+      // check whether the shot hits the avatar (i.e. player).
+      if (alienShots[1].collides(avatar)) {
+        // TODO explosion to avatar!
+        alienShots[1].setEnabled(false);
+        alienShots[1].setVisible(false);
+      } else if (alienShots[1].collides(footerLine)) {
+        // TODO explosion to footer.
+        alienShots[1].setEnabled(false);
+        alienShots[1].setVisible(false);
+      }
+    }
+
+    // ========================================================================
+    // create an alien squiggly missile if it is being ready.
+    if (alienShots[2].isReadyToBeFired()) {
+      // get the next target column and increment the column index pointer.
+      var column = alienShotColumn[alienSquigglyShotColumnIndice];
+      alienSquigglyShotColumnIndice = (alienSquigglyShotColumnIndice + 1);
+      alienSquigglyShotColumnIndice = (alienSquigglyShotColumnIndice % this.ALIEN_SHOT_INDICE_COUNT);
+
+      for (n = 4; n >= 0; n--) {
+        var idx = (n * 11) + column;
+        if (aliens[idx].isVisible()) {
+          // assign the position of the plunger shot based on the nearest alien.
+          alienShots[2].setX(aliens[idx].getCenterX() - alienShots[2].getExtentX());
+          alienShots[2].setY(aliens[idx].getY() + aliens[idx].getHeight());
+          alienShots[2].fire();
+          break;
+        }
+      }
+    }
+
+    alienShots[2].animateAndUpdate(dt);
+    if (alienShots[2].isVisible()) {
+      // check whether the shot hits the avatar (i.e. player).
+      if (alienShots[2].collides(avatar)) {
+        // TODO explosion to avatar!
+        alienShots[2].setEnabled(false);
+        alienShots[2].setVisible(false);
+      } else if (alienShots[2].collides(footerLine)) {
+        // TODO explosion to footer.
+        alienShots[2].setEnabled(false);
+        alienShots[2].setVisible(false);
       }
     }
 
@@ -1295,6 +1577,9 @@ SpaceInvaders.IngameState = function (game) {
     }
     for (i = 0; i < aliens.length; i++) {
       aliens[i].render(ctx);
+    }
+    for (i = 0; i < alienShots.length; i++) {
+      alienShots[i].render(ctx);
     }
   }
 
