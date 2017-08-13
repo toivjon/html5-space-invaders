@@ -1429,27 +1429,25 @@ SpaceInvaders.IngameState = function (game) {
       } else {
         // find the nearest alien from the list of aliens.
         var avatarX = avatar.getCenterX();
-        var found = false;
-        for (col = 1; col < 11 && !found; col++) {
-          var d1 = Math.abs(aliens[col - 1].getCenterX() - avatarX);
-          var d2 = Math.abs(aliens[col].getCenterX() - avatarX);
-          if (d2 > d1 || col == 10) {
-            while (!found && col > 0) {
-              for (row = 4; row >= 0 && !found; row--) {
-                var idx = (row * 11) + (d2 <= d1 ? col : col - 1);
-                if (aliens[idx].isVisible()) {
-                  alienShots[0].setX(aliens[idx].getCenterX() - alienShots[0].getExtentX());
-                  alienShots[0].setY(aliens[idx].getY() + aliens[idx].getHeight());
-                  found = true;
-                }
-              }
-              if (!found) {
-                col--;
-              }
+        var aliendIdx = -1;
+        var prevDistance = -1;
+        for (col = 0; col < 11; col++) {
+          var distance = Math.abs(aliens[col].getCenterX() - avatarX);
+          if (prevDistance != -1 && distance > prevDistance) {
+            break;
+          }
+          for (row = 4; row >= 0; row--) {
+            var idx = (row * 11) + col;
+            if (aliens[idx].isVisible()) {
+              alienIdx = idx;
+              prevDistance = distance;
+              break;
             }
           }
         }
-        if (found) {
+        if (alienIdx != -1) {
+          alienShots[0].setX(aliens[alienIdx].getCenterX() - alienShots[0].getExtentX());
+          alienShots[0].setY(aliens[alienIdx].getY() + aliens[alienIdx].getHeight());
           alienShots[0].fire();
         }
         alienRollingShotLock = 1;
