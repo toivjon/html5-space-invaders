@@ -125,7 +125,7 @@ SpaceInvaders.Game = function () {
     * This function provides a simple way to externally check whether the game
     * has been inited successfully and is ready to run (or already running).
     *
-    * @return {boolean} A definition whether the game is inited.
+    * @return {[]} A definition whether the game is inited.
     */
   this.isInitialized = function () {
     return initialized;
@@ -712,6 +712,26 @@ SpaceInvaders.AnimatedMovableSpriteEntity = function (game) {
   this.getAnimationFrames = function () { return animationFrames; }
 }
 
+SpaceInvaders.AvatarLaser = function (game) {
+  SpaceInvaders.AnimatedMovableSpriteEntity.call(this, game);
+
+  /** *************************************************************************
+   * Explode (i.e. destroy) the avatar laser shot explosion animation.
+   *
+   * This animation replaces the currently shown sprite or sprite animation
+   * with an sprite that indicates that the player shot is exploding. It
+   * will also trigger a timer after which the player shot will be disabled.
+   */
+  this.explode = function () {
+    this.setAnimationStepSize(0);
+    this.setAnimationFrameIndex(3);
+    this.setEnabled(false);
+    this.setDisappearCountdown(10);
+    this.setDirectionY(0);
+  }
+
+}
+
 /** ***************************************************************************
  * A textual entity for all texts used in the Space Invaders game.
  *
@@ -1201,7 +1221,7 @@ SpaceInvaders.IngameState = function (game) {
 
   // initialize a single laser for the avatar.
   // we can reuse the same laser instance for the avatar.
-  avatarLaser = new SpaceInvaders.AnimatedMovableSpriteEntity(game);
+  avatarLaser = new SpaceInvaders.AvatarLaser(game);
   avatarLaser.setImage(game.getSpriteSheet());
   avatarLaser.setWidth(6);
   avatarLaser.setHeight(9);
@@ -1214,6 +1234,7 @@ SpaceInvaders.IngameState = function (game) {
   avatarLaser.addAnimationFrame(80, 36, 6, 9);
   avatarLaser.addAnimationFrame(131, 5, 39, 24);
   avatarLaser.addAnimationFrame(175, 5, 39, 24);
+  avatarLaser.addAnimationFrame(251, 37, 24, 24);
   avatarLaser.setAnimationStepSize(0);
   avatarLaser.setAnimationFrameIndex(0);
 
@@ -1506,6 +1527,11 @@ SpaceInvaders.IngameState = function (game) {
       } else if (alienShots[i].collides(footerLine)) {
         // explode at the footer.
         alienShots[i].explode();
+      } else if (alienShots[i].collides(avatarLaser)) {
+        // explode at the collision point.
+        alienShots[i].setEnabled(false);
+        alienShots[i].setVisible(false);
+        avatarLaser.explode();
       }
     }
 
