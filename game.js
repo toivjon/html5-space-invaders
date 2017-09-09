@@ -1170,7 +1170,12 @@ SpaceInvaders.IngameState = function (game) {
   var alienShots;
 
   var flyingSaucer;
+  /** The counter to count when the flying saucer is launched. */
   var flyingSaucerCounter = this.FLYING_SAUCER_INTERVAL;
+  /** The flying saucer point table used along with player shot counter. */
+  var flyingSaucerPointTable = [
+    100, 50, 50, 100, 150, 100, 100, 50, 300, 100, 100, 100, 50, 150, 100
+  ];
 
   /** The current shot column index of the plunger shot.  */
   var alienPlungerShotColumnIndice = this.ALIEN_PLUNGER_SHOT_START_INDEX;
@@ -1297,7 +1302,7 @@ SpaceInvaders.IngameState = function (game) {
   topOutOfBoundsDetector.setExtentY(45);
 
   // initialize the flying saucer at the top-right of the screen.
-  flyingSaucer = new SpaceInvaders.MovableSpriteEntity(game);
+  flyingSaucer = new SpaceInvaders.AnimatedMovableSpriteEntity(game);
   flyingSaucer.setImage(game.getSpriteSheet());
   flyingSaucer.setVelocity(0.15);
   flyingSaucer.setEnabled(false);
@@ -1306,8 +1311,9 @@ SpaceInvaders.IngameState = function (game) {
   flyingSaucer.setY(115);
   flyingSaucer.setWidth(43);
   flyingSaucer.setHeight(19);
-  flyingSaucer.setClipX(5);
-  flyingSaucer.setClipY(91);
+  flyingSaucer.addAnimationFrame(5, 91, 43, 19)
+  flyingSaucer.addAnimationFrame(54, 91, 66, 24);
+  flyingSaucer.setAnimationFrameIndex(0);
 
   // initialize aliens.
   aliens = [];
@@ -1543,6 +1549,7 @@ SpaceInvaders.IngameState = function (game) {
         // enable saucer and reset saucer counter.
         flyingSaucer.setEnabled(true);
         flyingSaucer.setVisible(true);
+        flyingSaucer.setAnimationFrameIndex(0);
         flyingSaucerCounter = this.FLYING_SAUCER_INTERVAL;
       } else {
         // get the next target column and increment the column index pointer.
@@ -1590,6 +1597,24 @@ SpaceInvaders.IngameState = function (game) {
         avatarLaser.setAnimationFrameIndex(1);
         avatarLaser.setY(topOutOfBoundsDetector.getY() + topOutOfBoundsDetector.getExtentY() * 2);
         avatarLaser.setDisappearCountdown(15);
+      } else if (avatarLaser.collides(flyingSaucer)) {
+        // hide the avatar laser shot.
+        avatarLaser.setDirectionY(0);
+        avatarLaser.setEnabled(false);
+        avatarLaser.setVisible(false);
+
+        // change the flying saucer to perform a splash explosion.
+        flyingSaucer.setDirectionX(0);
+        flyingSaucer.setAnimationFrameIndex(1);
+        flyingSaucer.setDisappearCountdown(15);
+
+        // add points for the player depending on the shot count.
+        var score = flyingSaucerPointTable[avatarLaserCount % 15];
+        if (game.getActivePlayer() == 1) {
+          game.setPlayer1Score(game.getPlayer1Score() + score);
+        } else {
+          game.setPlayer2Score(game.getPlayer2Score() + score);
+        }
       } else {
         for (n = 0; n < aliens.length; n++) {
           if (avatarLaser.collides(aliens[n])) {
