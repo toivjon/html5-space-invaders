@@ -542,10 +542,11 @@ SpaceInvaders.MovableSpriteEntity = function (game) {
  *
  * Plunger shot
  * A shot that follows a predefined alien columns list and is not used when there
- * is only one alien left OR when the flying saucer is being shown.
+ * is only one alien left.
  *
  * Squiggly shot
- * A shot that follows a predefined alien columns list.
+ * A shot that follows a predefined alien columns list and is not used when the
+ * flying saucer is being shown.
  *
  * Table is based on foundings from the following URL:
  * http://www.computerarcheology.com/Arcade/SpaceInvaders/Code.html
@@ -1149,9 +1150,13 @@ SpaceInvaders.IngameState = function (game) {
   /** A constant amount of shot indices per shot type (round-robin). */
   this.ALIEN_SHOT_INDICE_COUNT = 15;
 
+  /** A constant time interval between appending the flying saucer. */
+  this.FLYING_SAUCER_INTERVAL = 1200;
+
   var footerLine;
   var avatar;
   var avatarLaser;
+  var avatarLaserCount;
   var lifesText;
   var lifesSprites;
 
@@ -1163,6 +1168,9 @@ SpaceInvaders.IngameState = function (game) {
   var alienLeftBoundsDetector;
   var alienRightBoundsDetector;
   var alienShots;
+
+  var flyingSaucer;
+  var flyingSaucerCounter = this.FLYING_SAUCER_INTERVAL;
 
   /** The current shot column index of the plunger shot.  */
   var alienPlungerShotColumnIndice = this.ALIEN_PLUNGER_SHOT_START_INDEX;
@@ -1237,6 +1245,7 @@ SpaceInvaders.IngameState = function (game) {
   avatarLaser.addAnimationFrame(251, 37, 24, 24);
   avatarLaser.setAnimationStepSize(0);
   avatarLaser.setAnimationFrameIndex(0);
+  avatarLaserCount = 0;
 
   // get the amount of lives for the current player.
   var lives = 0;
@@ -1286,6 +1295,19 @@ SpaceInvaders.IngameState = function (game) {
   topOutOfBoundsDetector.setY(0);
   topOutOfBoundsDetector.setExtentX(768 / 2);
   topOutOfBoundsDetector.setExtentY(45);
+
+  // initialize the flying saucer at the top-right of the screen.
+  flyingSaucer = new SpaceInvaders.MovableSpriteEntity(game);
+  flyingSaucer.setImage(game.getSpriteSheet());
+  flyingSaucer.setVelocity(0.15);
+  flyingSaucer.setEnabled(false);
+  flyingSaucer.setVisible(false);
+  flyingSaucer.setX(672 - 43);
+  flyingSaucer.setY(115);
+  flyingSaucer.setWidth(43);
+  flyingSaucer.setHeight(19);
+  flyingSaucer.setClipX(5);
+  flyingSaucer.setClipY(91);
 
   // initialize aliens.
   aliens = [];
@@ -1402,6 +1424,8 @@ SpaceInvaders.IngameState = function (game) {
       avatarLaser.update(dt);
     }
 
+    flyingSaucer.update(dt);
+
     // check whether any of the aliens hit the alien movement bounds.
     var aliensHitBounds = false;
     for (i = 0; i < aliens.length && !aliensHitBounds; i++) {
@@ -1497,22 +1521,44 @@ SpaceInvaders.IngameState = function (game) {
       }
     }
 
-    // ========================================================================
-    // create an alien squiggly missile if it is being ready.
-    if (alienShots[2].isReadyToBeFired()) {
-      // get the next target column and increment the column index pointer.
-      var column = alienShotColumn[alienSquigglyShotColumnIndice];
-      alienSquigglyShotColumnIndice = (alienSquigglyShotColumnIndice + 1);
-      alienSquigglyShotColumnIndice = (alienSquigglyShotColumnIndice % this.ALIEN_SHOT_INDICE_COUNT);
+    // decrement the flying saucer counter when the saucer is not visible.
+    if (flyingSaucer.isVisible() == false) {
+      flyingSaucerCounter--;
+    }
 
-      for (n = 4; n >= 0; n--) {
-        var idx = (n * 11) + column;
-        if (aliens[idx].isVisible()) {
-          // assign the position of the plunger shot based on the nearest alien.
-          alienShots[2].setX(aliens[idx].getCenterX() - alienShots[2].getExtentX());
-          alienShots[2].setY(aliens[idx].getY() + aliens[idx].getHeight());
-          alienShots[2].fire();
-          break;
+    // ========================================================================
+    // create an flying saucer or an alien squiggly missile if it is being ready.
+    if (flyingSaucer.isVisible() == false && alienShots[2].isReadyToBeFired()) {
+      // check whether it is time to launch the flying saucer.
+      if (flyingSaucerCounter <= 0 && activeAlienCount >= 8) {
+        // set saucer movement direction depending on the player shot count.
+        if ((avatarLaserCount % 2) == 0) {
+          flyingSaucer.setDirectionX(-1);
+          flyingSaucer.setX(672 - flyingSaucer.getWidth());
+        } else {
+          flyingSaucer.setDirectionX(1);
+          flyingSaucer.setX(0);
+        }
+
+        // enable saucer and reset saucer counter.
+        flyingSaucer.setEnabled(true);
+        flyingSaucer.setVisible(true);
+        flyingSaucerCounter = this.FLYING_SAUCER_INTERVAL;
+      } else {
+        // get the next target column and increment the column index pointer.
+        var column = alienShotColumn[alienSquigglyShotColumnIndice];
+        alienSquigglyShotColumnIndice = (alienSquigglyShotColumnIndice + 1);
+        alienSquigglyShotColumnIndice = (alienSquigglyShotColumnIndice % this.ALIEN_SHOT_INDICE_COUNT);
+
+        for (n = 4; n >= 0; n--) {
+          var idx = (n * 11) + column;
+          if (aliens[idx].isVisible()) {
+            // assign the position of the plunger shot based on the nearest alien.
+            alienShots[2].setX(aliens[idx].getCenterX() - alienShots[2].getExtentX());
+            alienShots[2].setY(aliens[idx].getY() + aliens[idx].getHeight());
+            alienShots[2].fire();
+            break;
+          }
         }
       }
     }
@@ -1590,6 +1636,21 @@ SpaceInvaders.IngameState = function (game) {
       }
     }
 
+    // check whether the flying saucer has reached the movement across the screen.
+    if (flyingSaucer.isVisible()) {
+      if (flyingSaucer.getDirectionX() == 1) {
+        if (rightOutOfBoundsDetector.collides(flyingSaucer)) {
+          flyingSaucer.setEnabled(false);
+          flyingSaucer.setVisible(false);
+        }
+      } else {
+        if (leftOutOfBoundsDetector.collides(flyingSaucer)) {
+          flyingSaucer.setEnabled(false);
+          flyingSaucer.setVisible(false);
+        }
+      }
+    }
+
   }
 
   this.render = function (ctx) {
@@ -1597,6 +1658,7 @@ SpaceInvaders.IngameState = function (game) {
     avatar.render(ctx);
     avatarLaser.render(ctx);
     lifesText.render(ctx);
+    flyingSaucer.render(ctx);
     for (i = 0; i < lifeSprites.length; i++) {
       lifeSprites[i].render(ctx);
     }
@@ -1649,12 +1711,16 @@ SpaceInvaders.IngameState = function (game) {
         break;
       case game.KEY_SPACEBAR:
         if (avatarLaser.isVisible() == false) {
+          // shoot the laser from the avatar position.
           avatarLaser.setVisible(true);
           avatarLaser.setEnabled(true);
           avatarLaser.setDirectionY(-1);
           avatarLaser.setX(avatar.getCenterX() - avatarLaser.getExtentX());
           avatarLaser.setY(avatar.getY());
           avatarLaser.setAnimationFrameIndex(0);
+
+          // increment the laser counter.
+          avatarLaserCount++;
         }
         break;
     }
