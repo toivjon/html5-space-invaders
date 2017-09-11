@@ -23,6 +23,46 @@ SpaceInvaders.toScoreString = function (score) {
 }
 
 /** ***************************************************************************
+ * The container that holds player specific data and state.
+ *
+ * Space invaders contains a support for single- and multiplayer game modes. It
+ * is a good idea to store player specific data in a special container called a
+ * context. It contains all player specific data, which helps us to keep player
+ * data in a centralized place and also helps us to reconstruct the game state
+ * when the player switch is requested after a player destruction in the game.
+ *
+ * @param {SpaceInvaders.Game} game A reference to parent game instance.
+ */
+SpaceInvaders.PlayerContext = function (game) {
+  /** A reference to the root game instance. */
+  this.game = game;
+
+  /** A constant count definition of initial lives. */
+  this.INITIAL_LIVE_COUNT = 3;
+
+  /** The current level of the player. */
+  var level = 1;
+  /** The current score of the player. */
+  var score = 0;
+  /** The current amount of player lives. */
+  var lives = this.INITIAL_LIVE_COUNT;
+  /** The previous state of the aliens within the game. */
+  var alienStates = undefined;
+
+  this.getLevel = function () { return level; }
+  this.getScore = function () { return score; }
+  this.getLives = function () { return lives; }
+  this.getAlienStates = function () { return alienStates; }
+
+  this.setLevel = function (newLevel) { level = newLevel; }
+  this.setScore = function (newScore) { score = newScore; }
+  this.setLives = function (newLives) { lives = newLives; }
+  this.setAlienStates = function (newStates) { alienStates = newStates; }
+
+  this.addScore = function (additionalScore) { score += additionalScore; }
+}
+
+/** ***************************************************************************
  * The root game structure for the Space Invaders game.
  *
  * This object module contains the necessary structure to glue the game objects
@@ -55,9 +95,6 @@ SpaceInvaders.Game = function () {
   /** A constant for the spacebar keycode. */
   this.KEY_SPACEBAR = 32;
 
-  /** A constant count definition of initial lives. */
-  this.INITIAL_LIVE_COUNT = 3;
-
   /** A definition whether the game is initialized or not. */
   var initialized = false;
   /** A reference to the HTML5 canvas used as the rendering target. */
@@ -71,10 +108,11 @@ SpaceInvaders.Game = function () {
   /** A delta accumulator that collects the exceeding update time delta. */
   var deltaAccumulator = 0;
 
-  /** The score of the 1st player. */
-  var player1Score = 0;
-  /** The score of the 2nd player. */
-  var player2Score = 0;
+  /** A container for the state and data of the 1st player. */
+  var player1Context = new SpaceInvaders.PlayerContext(this);
+  /** A container for the state and data of the 2nd player. */
+  var player2Context = new SpaceInvaders.PlayerContext(this);
+
   /** The hi-score of the current game instace. */
   var hiScore = 0;
 
@@ -82,11 +120,6 @@ SpaceInvaders.Game = function () {
   var playerCount = 2;
   /** The currently active player. */
   var activePlayer = 1;
-
-  /** The current count of lives of the 1st player. */
-  var player1Lives = this.INITIAL_LIVE_COUNT;
-  /** The current count of lives of the 2nd player. */
-  var player2Lives = this.INITIAL_LIVE_COUNT;
 
   /** The sprite sheet containing all image assets for the game. */
   var spriteSheet = undefined;
@@ -236,21 +269,16 @@ SpaceInvaders.Game = function () {
     }
   };
 
-  this.getPlayer1Score = function () { return player1Score; }
-  this.getPlayer2Score = function () { return player2Score; }
+  this.getPlayer1Context = function () { return player1Context; }
+  this.getPlayer2Context = function () { return player2Context; }
+
   this.getHiScore = function () { return hiScore; }
   this.getSpriteSheet = function () { return spriteSheet; }
   this.getPlayerCount = function () { return playerCount; }
   this.getActivePlayer = function () { return activePlayer; }
-  this.getPlayer1Lives = function () { return player1Lives; }
-  this.getPlayer2Lives = function () { return player2Lives; }
 
-  this.setPlayer1Score = function (newScore) { player1Score = newScore; }
-  this.setPlayer2Score = function (newScore) { player2Score = newScore; }
   this.setHiScore = function (newScore) { hiScore = newScore; }
   this.setPlayerCount = function (newCount) { playerCount = newCount; }
-  this.setPlayer1Lives = function (newLives) { player1Lives = newLives; }
-  this.setPlayer2Lives = function (newLives) { player2Lives = newLives; }
 };
 
 /** ***************************************************************************
@@ -1248,9 +1276,11 @@ SpaceInvaders.IngameState = function (game) {
     // get the score of the current player.
     var currentScore = 0;
     if (game.getActivePlayer() == 1) {
-      currentScore = game.getPlayer1Score();
+      var ctx = game.getPlayer1Context();
+      currentScore = ctx.getScore();
     } else {
-      currentScore = game.getPlayer2Score();
+      var ctx = game.getPlayer2Context();
+      currentScore = ctx.getScore();
     }
 
     // return a reload rate based on the current score.
@@ -1309,12 +1339,8 @@ SpaceInvaders.IngameState = function (game) {
   avatarLaserCount = 0;
 
   // get the amount of lives for the current player.
-  var lives = 0;
-  if (game.getActivePlayer() == 1) {
-    lives = game.getPlayer1Lives();
-  } else {
-    lives = game.getPlayer2Lives();
-  }
+  var ctx = (game.getActivePlayer() == 1 ? game.getPlayer1Context() : game.getPlayer2Context());
+  var lives = ctx.getLives();
 
   // initialize the text indicating the amount lifes.
   lifesText = new SpaceInvaders.TextEntity(game);
@@ -1504,17 +1530,14 @@ SpaceInvaders.IngameState = function (game) {
    */
   this.decrementPlayerLives = function (playerIndex) {
     // get the current amount of lives of the target player.
-    var lives = (playerIndex == 1 ? game.getPlayer1Lives() : game.getPlayer2Lives());
+    var ctx = (playerIndex == 1 ? game.getPlayer1Context() : game.getPlayer2Context());
+    var lives = ctx.getLives();
 
     // decrement the amount of lives by one.
     lives = Math.max(0, lives - 1);
 
     // set the new lives amount for the target player.
-    if (playerIndex == 1) {
-      game.setPlayer1Lives(lives);
-    } else {
-      game.setPlayer2Lives(lives);
-    }
+    ctx.setLives(lives);
 
     // update the visual presentations of the current lives.
     lifesText.setText(lives.toString());
@@ -1536,9 +1559,10 @@ SpaceInvaders.IngameState = function (game) {
       var playerCount = game.getPlayerCount();
       if (playerCount == 1) {
         // check whether it's time end game or reset the avatar.
-        if (game.getPlayer1Lives() == 0) {
+        var ctx = game.getPlayer1Context();
+        if (ctx.getLives()  == 0) {
           // check and update hi-score if necessary.
-          var score = game.getPlayer1Score();
+          var score = ctx.getScore();
           if (score > game.getHiScore()) {
             game.setHiScore(score);
           }
@@ -1560,15 +1584,18 @@ SpaceInvaders.IngameState = function (game) {
         } else {
           // TODO restore old aliens state?
           // check whether the game should end.
-          if (game.getPlayer2Lives() == 0) {
+          var ctx = game.getPlayer2Context();
+          if (ctx.getLives() == 0) {
             // check and update hi-score if necessary.
-            var score1 = game.getPlayer1Score();
+            ctx = game.getPlayer1Context();
+            var score = ctx.getScore();
             if (score1 > game.getHiScore()) {
               game.setHiScore(score1);
             }
 
             // check and update hi-score if necessary.
-            var score2 = game.getPlayer2Score();
+            ctx = game.getPlayer2Context();
+            score = ctx.getScore();
             if (score2 > game.getHiScore()) {
               game.setHiScore(score2);
             }
@@ -1781,11 +1808,8 @@ SpaceInvaders.IngameState = function (game) {
 
         // add points for the player depending on the shot count.
         var score = flyingSaucerPointTable[avatarLaserCount % 15];
-        if (game.getActivePlayer() == 1) {
-          game.setPlayer1Score(game.getPlayer1Score() + score);
-        } else {
-          game.setPlayer2Score(game.getPlayer2Score() + score);
-        }
+        var ctx = (game.getActivePlayer() == 1 ? game.getPlayer1Context() : game.getPlayer2Context());
+        ctx.addScore(score);
       } else {
         for (n = 0; n < aliens.length; n++) {
           if (avatarLaser.collides(aliens[n])) {
@@ -1814,11 +1838,8 @@ SpaceInvaders.IngameState = function (game) {
             }
 
             // assign the earned score to currently active player.
-            if (game.getActivePlayer() == 1) {
-              game.setPlayer1Score(game.getPlayer1Score() + score);
-            } else {
-              game.setPlayer2Score(game.getPlayer2Score() + score);
-            }
+            var ctx = (game.getActivePlayer() == 1 ? game.getPlayer1Context() : game.getPlayer2Context());
+            ctx.addScore(score);
 
             // speed up the movement of the aliens.
             var newStepSize = aliens[0].getStepSize() - this.ALIEN_STEP_DECREMENT_SIZE;
@@ -1961,6 +1982,11 @@ SpaceInvaders.Scene = function (game) {
   /** A reference to the root game instance. */
   this.game = game;
 
+  /** A reference to the data and state container for the 1st player. */
+  this.player1Context = game.getPlayer1Context();
+  /** A reference to the data and state container for the 2nd player. */
+  this.player2Context = game.getPlayer2Context();
+
   var score1Caption;
   var hiScoreCaption;
   var score2Caption;
@@ -2043,8 +2069,8 @@ SpaceInvaders.Scene = function (game) {
    */
   this.update = function (dt) {
     // ensure that all visible score-markers are up-to-date.
-    score1Text.setText(SpaceInvaders.toScoreString(game.getPlayer1Score()));
-    score2Text.setText(SpaceInvaders.toScoreString(game.getPlayer2Score()));
+    score1Text.setText(SpaceInvaders.toScoreString(this.player1Context.getScore()));
+    score2Text.setText(SpaceInvaders.toScoreString(this.player2Context.getScore()));
     hiScoreText.setText(SpaceInvaders.toScoreString(game.getHiScore()));
 
     score1Caption.update(dt);
