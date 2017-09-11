@@ -530,6 +530,49 @@ SpaceInvaders.MovableSpriteEntity = function (game) {
 }
 
 /** ***************************************************************************
+ * An abstraction for the player avatar entity.
+ *
+ * This structure contains the additional definitions required for the player
+ * avatar object, which is the cannon tower that can be moved by the player.
+ */
+SpaceInvaders.AvatarEntity = function (game, scene) {
+  SpaceInvaders.AnimatedMovableSpriteEntity.call(this, game);
+
+  this.explode = function () {
+    // stop and disable the movement of the avatar.
+    this.setDirectionX(0);
+    this.setEnabled(false);
+
+    // assign the explosion animation for the avatar.
+    this.clearAnimationFrames();
+    this.addAnimationFrame(128, 91, 45, 24);
+    this.addAnimationFrame(178, 91, 45, 24);
+    this.setAnimationFrameIndex(0);
+    this.setAnimationStepSize(6);
+    this.setDisappearCountdown(6 * 8);
+
+    // decrement lives and start the scene relaunch counter.
+    scene.decrementPlayerLives(game.getActivePlayer());
+    scene.startRelaunchCounter();
+  }
+
+  this.reset = function () {
+    // reset the starting position of the avatar.
+    this.setX(672 / 2 - this.getWidth() / 2);
+
+    // set avatar back to collideable and visible.
+    this.setEnabled(true);
+    this.setVisible(true);
+
+    // reset the visual presentation of the avatar.
+    this.clearAnimationFrames();
+    this.addAnimationFrame(86, 5, 40, 24);
+    this.setAnimationFrameIndex(0);
+  }
+
+}
+
+/** ***************************************************************************
  * An abstraction for all alien shots.
  *
  * This structure contains the additional definitions and methods for the alien
@@ -706,6 +749,13 @@ SpaceInvaders.AnimatedMovableSpriteEntity = function (game) {
    */
   this.addAnimationFrame = function (clipX, clipY, width, height) {
     animationFrames.push([clipX, clipY, width, height]);
+  }
+
+  /** *************************************************************************
+   * Clear all available animation frames from the entity.
+   */
+  this.clearAnimationFrames = function () {
+    animationFrames = [];
   }
 
   this.getAnimationStepSize = function () { return animationStepSize; }
@@ -1152,13 +1202,16 @@ SpaceInvaders.IngameState = function (game) {
 
   /** A constant time interval between appending the flying saucer. */
   this.FLYING_SAUCER_INTERVAL = 1200;
+  /** A time that is waited after player avatar gets destroyed. */
+  this.RELAUNCH_WAIT_TIME = 150;
 
   var footerLine;
   var avatar;
   var avatarLaser;
   var avatarLaserCount;
   var lifesText;
-  var lifesSprites;
+  var lifeSprites;
+  var gameOverText;
 
   var leftOutOfBoundsDetector;
   var rightOutOfBoundsDetector;
@@ -1187,6 +1240,9 @@ SpaceInvaders.IngameState = function (game) {
   ];
   /** A lock used to prevent rolling shot to be created constantly. */
   var alienRollingShotLock = 0;
+
+  /** A counter used to wait before re-launching the game after avatar destruction. */
+  var relaunchCounter = 0;
 
   this.getAlienReloadRate = function () {
     // get the score of the current player.
@@ -1222,15 +1278,15 @@ SpaceInvaders.IngameState = function (game) {
   footerLine.setClipY(117);
 
   // initialize the green avatar moved by the player.
-  avatar = new SpaceInvaders.MovableSpriteEntity(game);
+  avatar = new SpaceInvaders.AvatarEntity(game, this);
   avatar.setImage(game.getSpriteSheet());
   avatar.setWidth(40);
   avatar.setHeight(24);
   avatar.setX(672 / 2 - avatar.getWidth() / 2);
   avatar.setY(648);
-  avatar.setClipX(86);
-  avatar.setClipY(5);
   avatar.setVelocity(0.25);
+  avatar.addAnimationFrame(86, 5, 40, 24);
+  avatar.setAnimationFrameIndex(0);
 
   // initialize a single laser for the avatar.
   // we can reuse the same laser instance for the avatar.
@@ -1280,6 +1336,15 @@ SpaceInvaders.IngameState = function (game) {
     lifeSprites.push(sprite);
   }
 
+  // initialize the text that indicates that the game has ended.
+  gameOverText = new SpaceInvaders.TextEntity(game);
+  gameOverText.setAlign("center");
+  gameOverText.setFillStyle("#f50305");
+  gameOverText.setText("GAME OVER");
+  gameOverText.setVisible(false);
+  gameOverText.setX(672 / 2);
+  gameOverText.setY(135);
+
   // initialize an out-of-bounds detector at the left side of the scene.
   leftOutOfBoundsDetector = new SpaceInvaders.CollideableEntity(game);
   leftOutOfBoundsDetector.setX(-100);
@@ -1319,7 +1384,7 @@ SpaceInvaders.IngameState = function (game) {
   aliens = [];
   for (row = 0; row < 5; row++) {
     var y = 192 + (24 * 2 * row);
-    var x = lifeSprites[0].getX();
+    var x = 66;
     for (col = 0; col < 11; col++) {
       var alien = new SpaceInvaders.AnimatedMovableSpriteEntity(game);
       alien.setImage(game.getSpriteSheet());
@@ -1424,8 +1489,107 @@ SpaceInvaders.IngameState = function (game) {
 
   this.getAlienShots = function () { return alienShots; }
 
+  this.startRelaunchCounter = function () {
+    relaunchCounter = this.RELAUNCH_WAIT_TIME;
+  }
+
+  /** *************************************************************************
+   * Decrement the current amoun of player lives for the target player.
+   *
+   * This function is used to perform all necessary operations to decrement
+   * the amount of lives for the target player. It updates the global lives
+   * count and also ensures that the visual presentation is being updated.
+   *
+   * @param {number} playerIndex The index of the target player.
+   */
+  this.decrementPlayerLives = function (playerIndex) {
+    // get the current amount of lives of the target player.
+    var lives = (playerIndex == 1 ? game.getPlayer1Lives() : game.getPlayer2Lives());
+
+    // decrement the amount of lives by one.
+    lives = Math.max(0, lives - 1);
+
+    // set the new lives amount for the target player.
+    if (playerIndex == 1) {
+      game.setPlayer1Lives(lives);
+    } else {
+      game.setPlayer2Lives(lives);
+    }
+
+    // update the visual presentations of the current lives.
+    lifesText.setText(lives.toString());
+    if (lifeSprites.length > 0) {
+      lifeSprites[Math.max(0, lives - 1)].setVisible(false);
+    }
+  }
+
   this.update = function (dt) {
+    // skip logical updates if the game has ended.
+    if (gameOverText.isVisible()) {
+      return;
+    }
+
+    // decrement relaunch counter if launched or handle destruction state.
+    if (relaunchCounter > 0) {
+      relaunchCounter--;
+    } else if (avatar.isEnabled() == false) {
+      var playerCount = game.getPlayerCount();
+      if (playerCount == 1) {
+        // check whether it's time end game or reset the avatar.
+        if (game.getPlayer1Lives() == 0) {
+          // check and update hi-score if necessary.
+          var score = game.getPlayer1Score();
+          if (score > game.getHiScore()) {
+            game.setHiScore(score);
+          }
+
+          // show the game over text.
+          gameOverText.setVisible(true);
+        } else {
+          avatar.reset();
+        }
+      } else {
+        // multi-player mode:
+        var playerIndex = game.getActivePlayer();
+        if (playerIndex == 1) {
+          // TODO restore old aliens state?
+          game.setActivePlayer(2);
+          var scene = game.getScene();
+          var state = new SpaceInvaders.PlayPlayerState(game);
+          scene.setState(state);
+        } else {
+          console.log(game.getPlayer2Lives());
+          // TODO restore old aliens state?
+          // check whether the game should end.
+          if (game.getPlayer2Lives() == 0) {
+            // check and update hi-score if necessary.
+            var score1 = game.getPlayer1Score();
+            if (score1 > game.getHiScore()) {
+              game.setHiScore(score1);
+            }
+
+            // check and update hi-score if necessary.
+            var score2 = game.getPlayer2Score();
+            if (score2 > game.getHiScore()) {
+              game.setHiScore(score2);
+            }
+
+            // show the game over text and also the score for 1st player.
+            gameOverText.setVisible(true);
+            game.getScene().getScore1Text().setVisible(true);
+          } else {
+            game.setActivePlayer(1);
+            var scene = game.getScene();
+            var state = new SpaceInvaders.PlayPlayerState(game);
+            scene.setState(state);
+          }
+        }
+      }
+    }
+
     avatar.update(dt);
+    avatar.animate();
+
     if (avatarLaser.isVisible()) {
       avatarLaser.update(dt);
     }
@@ -1448,15 +1612,22 @@ SpaceInvaders.IngameState = function (game) {
 
     // animate and update the currently visible aliens.
     var activeAlienCount = 0;
-    for (i = 0; i < aliens.length; i++) {
-      if (aliensHitBounds && aliens[i].getStepCounter()) {
-        aliens[i].setDirectionX(-aliens[i].getDirectionX());
-        aliens[i].setY(aliens[i].getY() + aliens[i].getHeight());
-      }
-      if (aliens[i].isVisible()) {
-        activeAlienCount++;
-        aliens[i].update(dt);
-        aliens[i].animate();
+    if (avatar.isEnabled()) {
+      for (i = 0; i < aliens.length; i++) {
+        if (aliensHitBounds && aliens[i].getStepCounter()) {
+          aliens[i].setDirectionX(-aliens[i].getDirectionX());
+          aliens[i].setY(aliens[i].getY() + aliens[i].getHeight());
+        }
+        if (aliens[i].isVisible()) {
+          activeAlienCount++;
+          aliens[i].update(dt);
+          aliens[i].animate();
+
+          // check whether the alien has just landed.
+          if (aliens[i].collides(footerLine)) {
+            avatar.explode();
+          }
+        }
       }
     }
 
@@ -1474,7 +1645,7 @@ SpaceInvaders.IngameState = function (game) {
     }
 
     // check and apply a state for the alien rolling missile.
-    if (alienShots[0].isReadyToBeFired()) {
+    if (avatar.isEnabled() && alienShots[0].isReadyToBeFired()) {
       if (alienRollingShotLock == 1) {
         alienRollingShotLock = 0;
       } else {
@@ -1508,7 +1679,7 @@ SpaceInvaders.IngameState = function (game) {
     // ========================================================================
     // create an alien plunger missile if it is being ready.
     if (activeAlienCount > 1) {
-      if (alienShots[1].isReadyToBeFired()) {
+      if (avatar.isEnabled() && alienShots[1].isReadyToBeFired()) {
         // get the next target column and increment the column index pointer.
         var column = alienShotColumn[alienPlungerShotColumnIndice];
         alienPlungerShotColumnIndice = (alienPlungerShotColumnIndice + 1);
@@ -1534,7 +1705,7 @@ SpaceInvaders.IngameState = function (game) {
 
     // ========================================================================
     // create an flying saucer or an alien squiggly missile if it is being ready.
-    if (flyingSaucer.isVisible() == false && alienShots[2].isReadyToBeFired()) {
+    if (avatar.isEnabled() && flyingSaucer.isVisible() == false && alienShots[2].isReadyToBeFired()) {
       // check whether it is time to launch the flying saucer.
       if (flyingSaucerCounter <= 0 && activeAlienCount >= 8) {
         // set saucer movement direction depending on the player shot count.
@@ -1574,9 +1745,10 @@ SpaceInvaders.IngameState = function (game) {
     for (i = 0; i < alienShots.length; i++) {
       alienShots[i].animateAndUpdate(dt);
       if (alienShots[i].collides(avatar)) {
-        // TODO explode the avatar.
+        // hide the shot and explode the avatar.
         alienShots[i].setEnabled(false);
         alienShots[i].setVisible(false);
+        avatar.explode();
       } else if (alienShots[i].collides(footerLine)) {
         // explode at the footer.
         alienShots[i].explode();
@@ -1684,6 +1856,7 @@ SpaceInvaders.IngameState = function (game) {
     avatarLaser.render(ctx);
     lifesText.render(ctx);
     flyingSaucer.render(ctx);
+    gameOverText.render(ctx);
     for (i = 0; i < lifeSprites.length; i++) {
       lifeSprites[i].render(ctx);
     }
@@ -1725,17 +1898,17 @@ SpaceInvaders.IngameState = function (game) {
     var key = event.keyCode ? event.keyCode : event.which;
     switch (key) {
       case game.KEY_LEFT:
-        if (avatar.getDirectionX() == -1) {
+        if (avatar.isEnabled() && avatar.getDirectionX() == -1) {
           avatar.setDirectionX(0);
         }
         break;
       case game.KEY_RIGHT:
-        if (avatar.getDirectionX() == 1) {
+        if (avatar.isEnabled() && avatar.getDirectionX() == 1) {
           avatar.setDirectionX(0);
         }
         break;
       case game.KEY_SPACEBAR:
-        if (avatarLaser.isVisible() == false) {
+        if (avatar.isEnabled() && avatarLaser.isVisible() == false) {
           // shoot the laser from the avatar position.
           avatarLaser.setVisible(true);
           avatarLaser.setEnabled(true);
@@ -1759,10 +1932,14 @@ SpaceInvaders.IngameState = function (game) {
     var key = event.keyCode ? event.keyCode : event.which;
     switch (key) {
       case game.KEY_LEFT:
-        avatar.setDirectionX(-1);
+        if (avatar.isEnabled()) {
+          avatar.setDirectionX(-1);
+        }
         break;
       case game.KEY_RIGHT:
-        avatar.setDirectionX(1);
+        if (avatar.isEnabled()) {
+          avatar.setDirectionX(1);
+        }
         break;
     }
   }
