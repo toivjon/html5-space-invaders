@@ -269,6 +269,18 @@ SpaceInvaders.Game = function () {
     }
   };
 
+  /** ***********************************************************************
+   * Get the context container of the currently active player.
+   *
+   * Game will always contain a context container for each player. The active
+   * context instance will be changed whenever the active player is changed.
+   *
+   * @returns {SpaceInvaders.PlayerContext} Context of the active player.
+   */
+  this.getActiveContext = function () {
+    return (activePlayer == 1 ? player1Context : player2Context);
+  }
+
   this.getPlayer1Context = function () { return player1Context; }
   this.getPlayer2Context = function () { return player2Context; }
 
@@ -1233,6 +1245,9 @@ SpaceInvaders.IngameState = function (game) {
   /** A time that is waited after player avatar gets destroyed. */
   this.RELAUNCH_WAIT_TIME = 150;
 
+  /** A reference to the currently active player context. */
+  var ctx = game.getActiveContext();
+
   var footerLine;
   var avatar;
   var avatarLaser;
@@ -1273,17 +1288,8 @@ SpaceInvaders.IngameState = function (game) {
   var relaunchCounter = 0;
 
   this.getAlienReloadRate = function () {
-    // get the score of the current player.
-    var currentScore = 0;
-    if (game.getActivePlayer() == 1) {
-      var ctx = game.getPlayer1Context();
-      currentScore = ctx.getScore();
-    } else {
-      var ctx = game.getPlayer2Context();
-      currentScore = ctx.getScore();
-    }
-
     // return a reload rate based on the current score.
+    var currentScore = ctx.getScore();
     if (currentScore <= 200) {
       return 48;
     } else if (currentScore <= 1000) {
@@ -1339,7 +1345,6 @@ SpaceInvaders.IngameState = function (game) {
   avatarLaserCount = 0;
 
   // get the amount of lives for the current player.
-  var ctx = (game.getActivePlayer() == 1 ? game.getPlayer1Context() : game.getPlayer2Context());
   var lives = ctx.getLives();
 
   // initialize the text indicating the amount lifes.
@@ -1530,7 +1535,6 @@ SpaceInvaders.IngameState = function (game) {
    */
   this.decrementPlayerLives = function (playerIndex) {
     // get the current amount of lives of the target player.
-    var ctx = (playerIndex == 1 ? game.getPlayer1Context() : game.getPlayer2Context());
     var lives = ctx.getLives();
 
     // decrement the amount of lives by one.
@@ -1559,8 +1563,7 @@ SpaceInvaders.IngameState = function (game) {
       var playerCount = game.getPlayerCount();
       if (playerCount == 1) {
         // check whether it's time end game or reset the avatar.
-        var ctx = game.getPlayer1Context();
-        if (ctx.getLives()  == 0) {
+        if (ctx.getLives() == 0) {
           // check and update hi-score if necessary.
           var score = ctx.getScore();
           if (score > game.getHiScore()) {
@@ -1584,20 +1587,19 @@ SpaceInvaders.IngameState = function (game) {
         } else {
           // TODO restore old aliens state?
           // check whether the game should end.
-          var ctx = game.getPlayer2Context();
-          if (ctx.getLives() == 0) {
+          var player1Ctx = game.getPlayer1Context();
+          var player2Ctx = game.getPlayer2Context();
+          if (player2Ctx.getLives() == 0) {
             // check and update hi-score if necessary.
-            ctx = game.getPlayer1Context();
-            var score = ctx.getScore();
-            if (score1 > game.getHiScore()) {
-              game.setHiScore(score1);
+            var score = player1Ctx.getScore();
+            if (score > game.getHiScore()) {
+              game.setHiScore(score);
             }
 
             // check and update hi-score if necessary.
-            ctx = game.getPlayer2Context();
-            score = ctx.getScore();
-            if (score2 > game.getHiScore()) {
-              game.setHiScore(score2);
+            score = player2Ctx.getScore();
+            if (score > game.getHiScore()) {
+              game.setHiScore(score);
             }
 
             // show the game over text and also the score for 1st player.
@@ -1808,7 +1810,6 @@ SpaceInvaders.IngameState = function (game) {
 
         // add points for the player depending on the shot count.
         var score = flyingSaucerPointTable[avatarLaserCount % 15];
-        var ctx = (game.getActivePlayer() == 1 ? game.getPlayer1Context() : game.getPlayer2Context());
         ctx.addScore(score);
       } else {
         for (n = 0; n < aliens.length; n++) {
@@ -1838,7 +1839,6 @@ SpaceInvaders.IngameState = function (game) {
             }
 
             // assign the earned score to currently active player.
-            var ctx = (game.getActivePlayer() == 1 ? game.getPlayer1Context() : game.getPlayer2Context());
             ctx.addScore(score);
 
             // speed up the movement of the aliens.
