@@ -1558,7 +1558,6 @@ SpaceInvaders.IngameState = function (game) {
           var state = new SpaceInvaders.PlayPlayerState(game);
           scene.setState(state);
         } else {
-          console.log(game.getPlayer2Lives());
           // TODO restore old aliens state?
           // check whether the game should end.
           if (game.getPlayer2Lives() == 0) {
