@@ -1663,6 +1663,14 @@ SpaceInvaders.IngameState = function (game) {
           }
         }
       }
+
+      // check whether all aliens are destroyed i.e. the level is cleared.
+      if (activeAlienCount <= 0) {
+        ctx.setLevel(ctx.getLevel() + 1);
+        var scene = game.getScene();
+        scene.setState(new SpaceInvaders.PlayPlayerState(game));
+        return;
+      }
     }
 
     // check that the avatar cannot go out-of-bounds from the either side of the scene.
