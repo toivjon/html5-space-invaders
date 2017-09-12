@@ -1303,6 +1303,45 @@ SpaceInvaders.IngameState = function (game) {
     }
   }
 
+  this.constructAliens = function () {
+    aliens = ctx.getAlienStates();
+    if (aliens == undefined) {
+      aliens = [];
+      for (row = 0; row < 5; row++) {
+        var y = 192 + (24 * 2 * row);
+        var x = 66;
+        for (col = 0; col < 11; col++) {
+          var alien = new SpaceInvaders.AnimatedMovableSpriteEntity(game);
+          alien.setImage(game.getSpriteSheet());
+          alien.setDirectionX(1);
+          alien.setVelocity(0.4);
+          alien.setAnimationStepSize(this.ALIEN_START_STEP_SIZE);
+          alien.setStepSize(this.ALIEN_START_STEP_SIZE);
+          alien.setY(y);
+          alien.setHeight(24);
+          if (row == 0) {
+            alien.setWidth(24);
+            alien.setX(x + 6 + (col * 2 * 24));
+            alien.addAnimationFrame(5, 62, 24, 24);
+            alien.addAnimationFrame(34, 62, 24, 24);
+          } else if (row < 3) {
+            alien.setWidth(33);
+            alien.setX(x + 1 + (col * 2 * 24));
+            alien.addAnimationFrame(5, 33, 33, 24);
+            alien.addAnimationFrame(43, 33, 33, 24);
+          } else {
+            alien.setWidth(36);
+            alien.setX(x + (col * 2 * 24));
+            alien.addAnimationFrame(5, 5, 36, 24);
+            alien.addAnimationFrame(46, 5, 36, 24);
+          }
+          alien.setAnimationFrameIndex(0);
+          aliens.push(alien);
+        }
+      }
+    }
+  }
+
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
   footerLine.setImage(game.getSpriteSheet());
@@ -1412,39 +1451,7 @@ SpaceInvaders.IngameState = function (game) {
   flyingSaucer.setAnimationFrameIndex(0);
 
   // initialize aliens.
-  aliens = [];
-  for (row = 0; row < 5; row++) {
-    var y = 192 + (24 * 2 * row);
-    var x = 66;
-    for (col = 0; col < 11; col++) {
-      var alien = new SpaceInvaders.AnimatedMovableSpriteEntity(game);
-      alien.setImage(game.getSpriteSheet());
-      alien.setDirectionX(1);
-      alien.setVelocity(0.4);
-      alien.setAnimationStepSize(this.ALIEN_START_STEP_SIZE);
-      alien.setStepSize(this.ALIEN_START_STEP_SIZE);
-      alien.setY(y);
-      alien.setHeight(24);
-      if (row == 0) {
-        alien.setWidth(24);
-        alien.setX(x + 6 + (col * 2 * 24));
-        alien.addAnimationFrame(5, 62, 24, 24);
-        alien.addAnimationFrame(34, 62, 24, 24);
-      } else if (row < 3) {
-        alien.setWidth(33);
-        alien.setX(x + 1 + (col * 2 * 24));
-        alien.addAnimationFrame(5, 33, 33, 24);
-        alien.addAnimationFrame(43, 33, 33, 24);
-      } else {
-        alien.setWidth(36);
-        alien.setX(x + (col * 2 * 24));
-        alien.addAnimationFrame(5, 5, 36, 24);
-        alien.addAnimationFrame(46, 5, 36, 24);
-      }
-      alien.setAnimationFrameIndex(0);
-      aliens.push(alien);
-    }
-  }
+  this.constructAliens();
 
   // initialize the left bounds detector for the aliens.
   alienLeftBoundsDetector = new SpaceInvaders.CollideableEntity(game);
@@ -1577,15 +1584,14 @@ SpaceInvaders.IngameState = function (game) {
         }
       } else {
         // multi-player mode:
+        ctx.setAlienStates(aliens);
         var playerIndex = game.getActivePlayer();
         if (playerIndex == 1) {
-          // TODO restore old aliens state?
           game.setActivePlayer(2);
           var scene = game.getScene();
           var state = new SpaceInvaders.PlayPlayerState(game);
           scene.setState(state);
         } else {
-          // TODO restore old aliens state?
           // check whether the game should end.
           var player1Ctx = game.getPlayer1Context();
           var player2Ctx = game.getPlayer2Context();
