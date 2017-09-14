@@ -1303,12 +1303,32 @@ SpaceInvaders.IngameState = function (game) {
     }
   }
 
+  this.getAlienStartY = function () {
+    // return the topmost alien starting y-position based on the current level.
+    var level = Math.max(1, (ctx.getLevel() % 10));
+    var start = 192;
+    if (level > 1) {
+      start += 48;
+    }
+    if (level > 2) {
+      start += 24;
+    }
+    if (level > 3) {
+      start += 24;
+    }
+    if (level > 5) {
+      start += 24;
+    }
+    return start;
+  }
+
   this.constructAliens = function () {
     aliens = ctx.getAlienStates();
     if (aliens == undefined) {
       aliens = [];
+      var startRow = this. getAlienStartY();
       for (row = 0; row < 5; row++) {
-        var y = 192 + (24 * 2 * row);
+        var y = startRow + (24 * 2 * row);
         var x = 66;
         for (col = 0; col < 11; col++) {
           var alien = new SpaceInvaders.AnimatedMovableSpriteEntity(game);
