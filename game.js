@@ -1707,10 +1707,11 @@ SpaceInvaders.IngameState = function (game) {
     }
 
     // check and apply a state for the alien rolling missile.
-    if (avatar.isEnabled() && alienShots[0].isReadyToBeFired()) {
-      if (alienRollingShotLock == 1) {
-        alienRollingShotLock = 0;
-      } else {
+    if (avatar.isEnabled()) {
+      if (alienRollingShotLock > 0) {
+        alienRollingShotLock--;
+      }
+      if (alienShots[0].isReadyToBeFired() && alienRollingShotLock <= 0) {
         // find the nearest alien from the list of aliens.
         var avatarX = avatar.getCenterX();
         var aliendIdx = -1;
@@ -1734,7 +1735,7 @@ SpaceInvaders.IngameState = function (game) {
           alienShots[0].setY(aliens[alienIdx].getY() + aliens[alienIdx].getHeight());
           alienShots[0].fire();
         }
-        alienRollingShotLock = 1;
+        alienRollingShotLock = this.getAlienReloadRate() * 4;
       }
     }
 
