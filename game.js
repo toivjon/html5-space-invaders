@@ -598,7 +598,7 @@ SpaceInvaders.AvatarEntity = function (game, scene) {
 
   this.reset = function () {
     // reset the starting position of the avatar.
-    this.setX(672 / 2 - this.getWidth() / 2);
+    this.setX(this.getWidth());
 
     // set avatar back to collideable and visible.
     this.setEnabled(true);
@@ -1377,7 +1377,7 @@ SpaceInvaders.IngameState = function (game) {
   avatar.setImage(game.getSpriteSheet());
   avatar.setWidth(40);
   avatar.setHeight(24);
-  avatar.setX(672 / 2 - avatar.getWidth() / 2);
+  avatar.setX(avatar.getWidth());
   avatar.setY(648);
   avatar.setVelocity(0.25);
   avatar.addAnimationFrame(86, 5, 40, 24);
