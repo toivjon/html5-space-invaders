@@ -703,6 +703,33 @@ SpaceInvaders.AlienShotEntity = function (game, scene) {
 }
 
 /** ***************************************************************************
+ * An abstraction for all player shields.
+ *
+ * This structure contains the logics required for the player avatar shields.
+ * In the original Space Invaders, there are four shields that player mayer use
+ * to protect the avatar against the alien laser shots.
+ *
+ * Shields are destructable, where destructions consume a part of the shield. In
+ * fact, there are three different things that must consume shields.
+ *
+ * 1. Alien shots
+ * 2. Player shots
+ * 3. Alien contact
+ *
+ * Each collision with the previously mentioned entity must consume a part of
+ * the shield where the collision occurs. Collided shots must be first exploded
+ * and then use the explosion sprite to consume part of the shield pixels away.
+ * Note that avatar and alien lasers collides with a different explosion sprite.
+ *
+ * @param {SpaceInvaders.Game} game A reference to the target game instance.
+ */
+SpaceInvaders.Shield = function (game) {
+  SpaceInvaders.SpriteEntity.call(this, game);
+
+
+}
+
+/** ***************************************************************************
  * An abstraction for all movable sprite entities that can be animated.
  *
  * This structure contains the logics required to make an movable entity to be
@@ -1287,6 +1314,8 @@ SpaceInvaders.IngameState = function (game) {
   /** A counter used to wait before re-launching the game after avatar destruction. */
   var relaunchCounter = 0;
 
+  var shields;
+
   this.getAlienReloadRate = function () {
     // return a reload rate based on the current score.
     var currentScore = ctx.getScore();
@@ -1544,6 +1573,48 @@ SpaceInvaders.IngameState = function (game) {
   alienShots.push(rollingShot);
   alienShots.push(plungerShot);
   alienShots.push(squigglyShot);
+
+  var shield1 = new SpaceInvaders.Shield(game);
+  shield1.setImage(game.getSpriteSheet());
+  shield1.setWidth(66);
+  shield1.setHeight(48);
+  shield1.setClipX(293);
+  shield1.setClipY(5);
+  shield1.setX(135 - shield1.getWidth() / 2);
+  shield1.setY(575);
+
+  var shield2 = new SpaceInvaders.Shield(game);
+  shield2.setImage(game.getSpriteSheet());
+  shield2.setWidth(66);
+  shield2.setHeight(48);
+  shield2.setClipX(293);
+  shield2.setClipY(5);
+  shield2.setX(269 - shield2.getWidth() / 2);
+  shield2.setY(575);
+
+  var shield3 = new SpaceInvaders.Shield(game);
+  shield3.setImage(game.getSpriteSheet());
+  shield3.setWidth(66);
+  shield3.setHeight(48);
+  shield3.setClipX(293);
+  shield3.setClipY(5);
+  shield3.setX(403 - shield3.getWidth() / 2);
+  shield3.setY(575);
+
+  var shield4 = new SpaceInvaders.Shield(game);
+  shield4.setImage(game.getSpriteSheet());
+  shield4.setWidth(66);
+  shield4.setHeight(48);
+  shield4.setClipX(293);
+  shield4.setClipY(5);
+  shield4.setX(537 - shield4.getWidth() / 2);
+  shield4.setY(575);
+
+  shields = [];
+  shields.push(shield1);
+  shields.push(shield2);
+  shields.push(shield3);
+  shields.push(shield4);
 
   this.getAlienShots = function () { return alienShots; }
 
@@ -1920,6 +1991,9 @@ SpaceInvaders.IngameState = function (game) {
     }
     for (i = 0; i < alienShots.length; i++) {
       alienShots[i].render(ctx);
+    }
+    for (i = 0; i < shields.length; i++) {
+      shields[i].render(ctx);
     }
   }
 
