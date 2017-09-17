@@ -48,16 +48,20 @@ SpaceInvaders.PlayerContext = function (game) {
   var lives = this.INITIAL_LIVE_COUNT;
   /** The previous state of the aliens within the game. */
   var alienStates = undefined;
+  /** The previous state of the shields within the game. */
+  var shieldStates = undefined;
 
   this.getLevel = function () { return level; }
   this.getScore = function () { return score; }
   this.getLives = function () { return lives; }
   this.getAlienStates = function () { return alienStates; }
+  this.getShieldStates = function () { return shieldStates; }
 
   this.setLevel = function (newLevel) { level = newLevel; }
   this.setScore = function (newScore) { score = newScore; }
   this.setLives = function (newLives) { lives = newLives; }
   this.setAlienStates = function (newStates) { alienStates = newStates; }
+  this.setShieldStates = function (newStates) { shieldStates = newStates; }
 
   this.addScore = function (additionalScore) { score += additionalScore; }
 }
@@ -1527,6 +1531,53 @@ SpaceInvaders.IngameState = function (game) {
     }
   }
 
+  this.constructShields = function () {
+    shields = ctx.getShieldStates();
+    if (shields == undefined) {
+      var shield1 = new SpaceInvaders.Shield(game);
+      shield1.setImage(game.getSpriteSheet());
+      shield1.setWidth(66);
+      shield1.setHeight(48);
+      shield1.setClipX(293);
+      shield1.setClipY(5);
+      shield1.setX(135 - shield1.getWidth() / 2);
+      shield1.setY(575);
+
+      var shield2 = new SpaceInvaders.Shield(game);
+      shield2.setImage(game.getSpriteSheet());
+      shield2.setWidth(66);
+      shield2.setHeight(48);
+      shield2.setClipX(293);
+      shield2.setClipY(5);
+      shield2.setX(269 - shield2.getWidth() / 2);
+      shield2.setY(575);
+
+      var shield3 = new SpaceInvaders.Shield(game);
+      shield3.setImage(game.getSpriteSheet());
+      shield3.setWidth(66);
+      shield3.setHeight(48);
+      shield3.setClipX(293);
+      shield3.setClipY(5);
+      shield3.setX(403 - shield3.getWidth() / 2);
+      shield3.setY(575);
+
+      var shield4 = new SpaceInvaders.Shield(game);
+      shield4.setImage(game.getSpriteSheet());
+      shield4.setWidth(66);
+      shield4.setHeight(48);
+      shield4.setClipX(293);
+      shield4.setClipY(5);
+      shield4.setX(537 - shield4.getWidth() / 2);
+      shield4.setY(575);
+
+      shields = [];
+      shields.push(shield1);
+      shields.push(shield2);
+      shields.push(shield3);
+      shields.push(shield4);
+    }
+  }
+
   // initialize the green static footer line at the bottom of the screen.
   footerLine = new SpaceInvaders.SpriteEntity(game);
   footerLine.setImage(game.getSpriteSheet());
@@ -1710,47 +1761,8 @@ SpaceInvaders.IngameState = function (game) {
   alienShots.push(plungerShot);
   alienShots.push(squigglyShot);
 
-  var shield1 = new SpaceInvaders.Shield(game);
-  shield1.setImage(game.getSpriteSheet());
-  shield1.setWidth(66);
-  shield1.setHeight(48);
-  shield1.setClipX(293);
-  shield1.setClipY(5);
-  shield1.setX(135 - shield1.getWidth() / 2);
-  shield1.setY(575);
-
-  var shield2 = new SpaceInvaders.Shield(game);
-  shield2.setImage(game.getSpriteSheet());
-  shield2.setWidth(66);
-  shield2.setHeight(48);
-  shield2.setClipX(293);
-  shield2.setClipY(5);
-  shield2.setX(269 - shield2.getWidth() / 2);
-  shield2.setY(575);
-
-  var shield3 = new SpaceInvaders.Shield(game);
-  shield3.setImage(game.getSpriteSheet());
-  shield3.setWidth(66);
-  shield3.setHeight(48);
-  shield3.setClipX(293);
-  shield3.setClipY(5);
-  shield3.setX(403 - shield3.getWidth() / 2);
-  shield3.setY(575);
-
-  var shield4 = new SpaceInvaders.Shield(game);
-  shield4.setImage(game.getSpriteSheet());
-  shield4.setWidth(66);
-  shield4.setHeight(48);
-  shield4.setClipX(293);
-  shield4.setClipY(5);
-  shield4.setX(537 - shield4.getWidth() / 2);
-  shield4.setY(575);
-
-  shields = [];
-  shields.push(shield1);
-  shields.push(shield2);
-  shields.push(shield3);
-  shields.push(shield4);
+  // construct the four avatar shields for the player.
+  this.constructShields();
 
   this.getAlienShots = function () { return alienShots; }
 
@@ -1812,6 +1824,7 @@ SpaceInvaders.IngameState = function (game) {
       } else {
         // multi-player mode:
         ctx.setAlienStates(aliens);
+        ctx.setShieldStates(shields);
         var playerIndex = game.getActivePlayer();
         if (playerIndex == 1) {
           game.setActivePlayer(2);
