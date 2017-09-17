@@ -1302,7 +1302,7 @@ SpaceInvaders.WelcomeState = function (game) {
    * @param {KeyboardEvent} e The keyboard event received from the DOM.
    */
   this.keyUp = function (e) {
-    var key = event.keyCode ? event.keyCode : event.which;
+    var key = e.keyCode ? e.keyCode : e.which;
     switch (key) {
       case game.KEY_1:
         game.setPlayerCount(1);
@@ -2182,7 +2182,7 @@ SpaceInvaders.IngameState = function (game) {
    * @param {KeyboardEvent} e The keyboard event received from the DOM.
    */
   this.keyUp = function (e) {
-    var key = event.keyCode ? event.keyCode : event.which;
+    var key = e.keyCode ? e.keyCode : e.which;
     switch (key) {
       case game.KEY_LEFT:
         if (avatar.isEnabled() && avatar.getDirectionX() == -1) {
@@ -2216,7 +2216,7 @@ SpaceInvaders.IngameState = function (game) {
    * @param {KeyboardEvent} e The keyboard event received from the DOM.
    */
   this.keyDown = function (e) {
-    var key = event.keyCode ? event.keyCode : event.which;
+    var key = e.keyCode ? e.keyCode : e.which;
     switch (key) {
       case game.KEY_LEFT:
         if (avatar.isEnabled()) {
