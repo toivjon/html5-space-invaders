@@ -288,6 +288,7 @@ SpaceInvaders.Game = function () {
   this.getSpriteSheet = function () { return spriteSheet; }
   this.getPlayerCount = function () { return playerCount; }
   this.getActivePlayer = function () { return activePlayer; }
+  this.getCanvasCtx = function () { return ctx; }
 
   this.setHiScore = function (newScore) { hiScore = newScore; }
   this.setPlayerCount = function (newCount) { playerCount = newCount; }
@@ -373,6 +374,19 @@ SpaceInvaders.CollideableEntity = function (game) {
     var x = Math.abs(centerX - o.getCenterX()) < (extentX + o.getExtentX());
     var y = Math.abs(centerY - o.getCenterY()) < (extentY + o.getExtentY());
     return x && y;
+  }
+
+  /****************************************************************************
+   * Check whether this entity contains the specified pixel.
+   * @param {number} x The x-coordinate of the pixel.
+   * @param {number} y The y-coordinate of the pixel.
+   * @returns {boolean} Boolean indivating whether pixel is included.
+   */
+  this.containsPixel = function (x, y) {
+    return !(x < (centerX - extentX)
+      || x > (centerX + extentX)
+      || y < (centerY - extentY)
+      || y > (centerY + extentY));
   }
 
   this.setX = function (newX) {
@@ -726,6 +740,128 @@ SpaceInvaders.AlienShotEntity = function (game, scene) {
 SpaceInvaders.Shield = function (game) {
   SpaceInvaders.SpriteEntity.call(this, game);
 
+  /** Sprite pixels from left-to-right and top-to-bottom order. */
+  var pixels = undefined;
+  /** A definition whether the shields pixels have been modified. */
+  var pixelsDirty = false;
+
+  /** *************************************************************************
+   * Check whether the shield precisely collides with the target object.
+   *
+   * This function is used to perform two-phase collision detection. Here we
+   * use a broad (AABB-ABB) and narrow (pixel-pixel) phases to detect whether
+   * the provided object hits the shield.
+   *
+   * @param {SpaceInvaders.CollideableEntity} other Entity to check against.
+   */
+  this.preciseCollides = function (other) {
+    if (this.collides(other)) {
+      // get a reference to current position and size.
+      var x = this.getX();
+      var y = this.getY();
+      var width = this.getWidth();
+
+      // iterate pixels based on the object movement direction.
+      if (pixels == undefined) {
+        this.refreshPixels();
+      }
+      var data = pixels.data;
+
+      if (other instanceof SpaceInvaders.AvatarLaser) {
+        for (var i = (data.length - 1); i >= 0; i -= 4) {
+          if (data[i + 3] != 0 && this.preciseCollide(data, (i / 4), other)) {
+            break;
+          }
+        }
+      } else {
+        for (var i = 0; i < data.length; i += 4) {
+          if (data[i + 3] != 0 && this.preciseCollide(data, (i / 4), other)) {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  /** *************************************************************************
+   * Check whether the target pixel collides with the specified object.
+   *
+   * This function checks whether the provided pixel does a pixel-wide hit with
+   * the provided object instance bounding box (AABB). If there is an collision
+   * then the target object will be exploded and the explosion pixels will be
+   * consumed i.e. removed from the shield sprite object to indicate destruct.
+   *
+   * @param pixels A map of pixels.
+   * @param pixelIdx The index of the target index.
+   * @param object Object to check collision against.
+   */
+  this.preciseCollide = function (pixels, pixelIdx, object) {
+    var pixelX = (this.getX() + (pixelIdx % this.getWidth()));
+    var pixelY = (this.getY() + Math.floor(pixelIdx / this.getWidth()));
+    if (object.containsPixel(pixelX, pixelY)) {
+      object.explode();
+      object.setY(pixelY - object.getExtentY());
+      object.render(game.getCanvasCtx());
+      this.refreshPixels();
+      this.eraseWhitePixels();
+      pixelsDirty = true;
+      return true;
+    }
+    return false;
+  }
+
+  /** *************************************************************************
+   * Erase all white pixels from the wrapped sprite pixels.
+   *
+   * This function removes all white pixels from the currently wrapped sprite
+   * image pixels. It is used to remove explosion specific pixels from the map
+   * of pixels that function and indicate the condition of a player shield.
+   */
+  this.eraseWhitePixels = function () {
+    var data = pixels.data;
+    for (var j = 0; j < data.length; j++) {
+      if (data[j] == 255 && data[j + 1] == 255 && data[j + 2] == 255) {
+        data[j] = 0;
+        data[j + 1] = 0;
+        data[j + 2] = 0;
+        data[j + 3] = 0;
+      }
+    }
+  }
+
+  /** *************************************************************************
+   * Refresh the pixels belonging to the shield object.
+   *
+   * This function refreshes the wrapped sprite image pixel map that visually
+   * indicate the condition as well as is being used in the collision detection.
+   */
+  this.refreshPixels = function () {
+    pixels = game.getCanvasCtx().getImageData(
+      this.getX(),
+      this.getY(),
+      this.getWidth(),
+      this.getHeight());
+  }
+
+  this.render = function (ctx) {
+    if (this.isVisible()) {
+      if (pixelsDirty) {
+        ctx.putImageData(pixels, this.getX(), this.getY());
+      } else {
+        if (this.getImage()) {
+          ctx.drawImage(this.getImage(),
+            this.getClipX(),
+            this.getClipY(),
+            this.getWidth(),
+            this.getHeight(),
+            this.getX(),
+            this.getY(),
+            this.getWidth(),
+            this.getHeight());
+        }
+      }
+    }
+  }
 
 }
 
@@ -1355,7 +1491,7 @@ SpaceInvaders.IngameState = function (game) {
     aliens = ctx.getAlienStates();
     if (aliens == undefined) {
       aliens = [];
-      var startRow = this. getAlienStartY();
+      var startRow = this.getAlienStartY();
       for (row = 0; row < 5; row++) {
         var y = startRow + (24 * 2 * row);
         var x = 66;
@@ -1876,7 +2012,7 @@ SpaceInvaders.IngameState = function (game) {
     }
 
     // animate, update and check collisions for all alien shots.
-    for (i = 0; i < alienShots.length; i++) {
+    for (var i = 0; i < alienShots.length; i++) {
       alienShots[i].animateAndUpdate(dt);
       if (alienShots[i].collides(avatar)) {
         // hide the shot and explode the avatar.
@@ -1891,6 +2027,11 @@ SpaceInvaders.IngameState = function (game) {
         alienShots[i].setEnabled(false);
         alienShots[i].setVisible(false);
         avatarLaser.explode();
+      } else {
+        // explode when a shield is being hit.
+        for (var j = 0; j < shields.length; j++) {
+          shields[j].preciseCollides(alienShots[i]);
+        }
       }
     }
 
@@ -1918,6 +2059,10 @@ SpaceInvaders.IngameState = function (game) {
         var score = flyingSaucerPointTable[avatarLaserCount % 15];
         ctx.addScore(score);
       } else {
+        // check whether player laser hits shields.
+        for (var i = 0; i < shields.length; i++) {
+          shields[i].preciseCollides(avatarLaser)
+        }
         for (n = 0; n < aliens.length; n++) {
           if (avatarLaser.collides(aliens[n])) {
             // disable and stop the laser from further movement.
@@ -1979,6 +2124,9 @@ SpaceInvaders.IngameState = function (game) {
   this.render = function (ctx) {
     footerLine.render(ctx);
     avatar.render(ctx);
+    for (i = 0; i < shields.length; i++) {
+      shields[i].render(ctx);
+    }
     avatarLaser.render(ctx);
     lifesText.render(ctx);
     flyingSaucer.render(ctx);
@@ -1991,9 +2139,6 @@ SpaceInvaders.IngameState = function (game) {
     }
     for (i = 0; i < alienShots.length; i++) {
       alienShots[i].render(ctx);
-    }
-    for (i = 0; i < shields.length; i++) {
-      shields[i].render(ctx);
     }
   }
 
