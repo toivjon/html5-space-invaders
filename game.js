@@ -633,7 +633,7 @@ SpaceInvaders.AvatarEntity = function (game, scene) {
 
   this.reset = function () {
     // reset the starting position of the avatar.
-    this.setX(this.getWidth() / 2);
+    this.setX(45);
 
     // set avatar back to collideable and visible.
     this.setEnabled(true);
@@ -1611,7 +1611,7 @@ SpaceInvaders.IngameState = function (game) {
   avatar.setImage(game.getSpriteSheet());
   avatar.setWidth(40);
   avatar.setHeight(24);
-  avatar.setX(avatar.getWidth() / 2);
+  avatar.setX(45);
   avatar.setY(648);
   avatar.setVelocity(0.25);
   avatar.addAnimationFrame(86, 5, 40, 24);
@@ -1716,14 +1716,14 @@ SpaceInvaders.IngameState = function (game) {
   // initialize aliens.
   this.constructAliens();
 
-  // initialize the left bounds detector for the aliens.
+  // initialize the left alien director for alien and avatar movement restrictions.
   alienLeftBoundsDetector = new SpaceInvaders.CollideableEntity(game);
   alienLeftBoundsDetector.setX(-45);
   alienLeftBoundsDetector.setY(0);
   alienLeftBoundsDetector.setExtentX(45);
   alienLeftBoundsDetector.setExtentY(768 / 2);
 
-  // initialize the right bounds detector for the aliens.
+  // initialize the right alien director for alien and avatar movement restrictions.
   alienRightBoundsDetector = new SpaceInvaders.CollideableEntity(game);
   alienRightBoundsDetector.setX(672 - 45);
   alienRightBoundsDetector.setY(0);
@@ -1944,14 +1944,14 @@ SpaceInvaders.IngameState = function (game) {
 
     // check that the avatar cannot go out-of-bounds from the either side of the scene.
     if (avatar.getDirectionX() == -1) {
-      if (leftOutOfBoundsDetector.collides(avatar)) {
+      if (alienLeftBoundsDetector.collides(avatar)) {
         avatar.setDirectionX(0);
-        avatar.setX(leftOutOfBoundsDetector.getX() + 2 * leftOutOfBoundsDetector.getExtentX());
+        avatar.setX(alienLeftBoundsDetector.getX() + 2 * alienLeftBoundsDetector.getExtentX());
       }
     } else if (avatar.getDirectionX() == 1) {
-      if (rightOutOfBoundsDetector.collides(avatar)) {
+      if (alienRightBoundsDetector.collides(avatar)) {
         avatar.setDirectionX(0);
-        avatar.setX(rightOutOfBoundsDetector.getX() - avatar.getWidth());
+        avatar.setX(alienRightBoundsDetector.getX() - avatar.getWidth());
       }
     }
 
