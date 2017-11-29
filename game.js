@@ -51,6 +51,21 @@ SpaceInvaders.PlayerContext = function (game) {
   /** The previous state of the shields within the game. */
   var shieldStates = undefined;
 
+  /** *************************************************************************
+   * Reset the context back to the original state.
+   *
+   * This function is used to reset the context to contain the initial values
+   * for each of the contained value. Useful for example, when the game is over
+   * and a new game should be started.
+   */
+  this.reset = function () {
+    level = 1;
+    score = 0;
+    lives = this.INITIAL_LIVE_COUNT;
+    shieldStates = undefined;
+    alienStates = undefined;
+  }
+
   this.getLevel = function () { return level; }
   this.getScore = function () { return score; }
   this.getLives = function () { return lives; }
@@ -98,6 +113,8 @@ SpaceInvaders.Game = function () {
   this.KEY_LEFT = 37;
   /** A constant for the spacebar keycode. */
   this.KEY_SPACEBAR = 32;
+  /** A constant for the enter keycode. */
+  this.KEY_ENTER = 13;
 
   /** A definition whether the game is initialized or not. */
   var initialized = false;
@@ -1422,6 +1439,7 @@ SpaceInvaders.IngameState = function (game) {
   var lifesText;
   var lifeSprites;
   var gameOverText;
+  var gameOverInstructions;
 
   var leftOutOfBoundsDetector;
   var rightOutOfBoundsDetector;
@@ -1651,6 +1669,15 @@ SpaceInvaders.IngameState = function (game) {
   gameOverText.setX(672 / 2);
   gameOverText.setY(135);
 
+  // initialize the text that indicates how to continue from game over.
+  gameOverInstructions = new SpaceInvaders.TextEntity(game);
+  gameOverInstructions.setAlign("center");
+  gameOverInstructions.setFillStyle("#f50305");
+  gameOverInstructions.setText("PRESS ENTER TO CONTINUE");
+  gameOverInstructions.setVisible(false);
+  gameOverInstructions.setX(672 / 2);
+  gameOverInstructions.setY(gameOverText.getY() + 40);
+
   // initialize an out-of-bounds detector at the left side of the scene.
   leftOutOfBoundsDetector = new SpaceInvaders.CollideableEntity(game);
   leftOutOfBoundsDetector.setX(-100);
@@ -1818,6 +1845,7 @@ SpaceInvaders.IngameState = function (game) {
 
           // show the game over text.
           gameOverText.setVisible(true);
+          gameOverInstructions.setVisible(true);
         } else {
           avatar.reset();
         }
@@ -1850,6 +1878,7 @@ SpaceInvaders.IngameState = function (game) {
 
             // show the game over text and also the score for 1st player.
             gameOverText.setVisible(true);
+            gameOverInstructions.setVisible(true);
             game.getScene().getScore1Text().setVisible(true);
           } else {
             game.setActivePlayer(1);
@@ -2144,6 +2173,7 @@ SpaceInvaders.IngameState = function (game) {
     lifesText.render(ctx);
     flyingSaucer.render(ctx);
     gameOverText.render(ctx);
+    gameOverInstructions.render(ctx);
     for (i = 0; i < lifeSprites.length; i++) {
       lifeSprites[i].render(ctx);
     }
@@ -2208,6 +2238,19 @@ SpaceInvaders.IngameState = function (game) {
           avatarLaserCount++;
         }
         break;
+      case game.KEY_ENTER: {
+        if (gameOverText.isVisible()) {
+          // reset game context before returning to welcome scene.
+          game.getPlayer1Context().reset();
+          game.getPlayer2Context().reset();
+
+          // return back to the welcome scene.
+          var scene = game.getScene();
+          var state = new SpaceInvaders.WelcomeState(game);
+          scene.setState(state);
+        }
+        break;
+      }
     }
   }
 
