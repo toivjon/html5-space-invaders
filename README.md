@@ -5,6 +5,8 @@ This implementation supports one and two players.
 
 The game is playable in the URL: https://toivjon.github.io/html5-space-invaders/
 
+Development blog entry: https://toivjon.wordpress.com/2017/09/17/html5-space-invaders/
+
 ## Scenes
 Game is split into following scenes:
 1. A welcome scene, which contains the main menu and score descriptions.
